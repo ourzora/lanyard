@@ -1,0 +1,27 @@
+name: go-test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "merkle/**"
+      - ".github/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "merkle/**"
+      - ".github/**"
+
+jobs:
+  build:
+    name: Test and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: Test
+        run: go test ./...
+        working-directory: ./
+      - name: Build Merkle
+        run: go build -v .
+        working-directory: ./merkle
