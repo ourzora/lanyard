@@ -1,0 +1,4 @@
+**/*.typegen.ts
+.vscode/**/*
+next-env.d.ts
+postcss.config.js
