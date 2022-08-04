@@ -1,0 +1,14 @@
+name: contracts-test
+
+on:
+  pull_request:
+    paths-ignore:
+      - "contracts/**"
+      - ".github/**"
+
+jobs:
+  tests:
+    name: Test contracts
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No build required"'
