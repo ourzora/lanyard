@@ -7,7 +7,6 @@ import (
 
 	"github.com/contextart/al/api/utils"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -20,10 +19,7 @@ type retreiveHashResponseBody struct {
 }
 
 func (s *Server) RetrieveTree(w http.ResponseWriter, r *http.Request) {
-	var (
-		vars    = mux.Vars(r)
-		rootStr = vars["root"]
-	)
+	rootStr := r.URL.Query().Get("root")
 	if rootStr == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "No merkle root provided")
 		return

@@ -6,7 +6,6 @@ import (
 
 	"github.com/contextart/al/api/db/queries"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -16,11 +15,9 @@ type retreiveProofResponseBody struct {
 
 func (s *Server) RetrieveProof(w http.ResponseWriter, r *http.Request) {
 	var (
-		vars    = mux.Vars(r)
-		rootStr = vars["root"]
-		addrStr = vars["address"]
+		rootStr = r.URL.Query().Get("root")
+		addrStr = r.URL.Query().Get("address")
 	)
-
 	if rootStr == "" || addrStr == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "need to provide both a merkle root and an address")
 		return

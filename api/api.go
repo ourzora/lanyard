@@ -30,8 +30,9 @@ func New(db *pgxpool.Pool) *Server {
 
 func (s *Server) Handler(env, gitSha string) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/v1/merkle/tree", s.CreateTree)
-	mux.HandleFunc("/api/v1/merkle/proofs", s.RetrieveProof)
+	mux.HandleFunc("/api/v1/create-tree", s.CreateTree)
+	mux.HandleFunc("/api/v1/get-tree", s.RetrieveTree)
+	mux.HandleFunc("/api/v1/get-proofs", s.RetrieveProof)
 	mux.HandleFunc("/health", s.Health)
 
 	h := http.Handler(mux)

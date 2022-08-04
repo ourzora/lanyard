@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/ethereum/go-ethereum v1.10.21
 	github.com/golang-migrate/migrate/v4 v4.15.2
-	github.com/gorilla/mux v1.7.4
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/rs/cors v1.8.2
