@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"errors"
@@ -35,7 +35,7 @@ func (s *Server) RetrieveTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addresses, err := s.writeQ.GetAddressesForMerkleTree(r.Context(), root.Bytes())
+	addresses, err := s.dbq.GetAddressesForMerkleTree(r.Context(), root.Bytes())
 	if errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, err, http.StatusNotFound, "No merkle root found")
 		return

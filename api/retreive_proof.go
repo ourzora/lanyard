@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"errors"
@@ -38,7 +38,7 @@ func (s *Server) RetrieveProof(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	proof, err := s.writeQ.GetMerkleProof(r.Context(), queries.GetMerkleProofParams{
+	proof, err := s.dbq.GetMerkleProof(r.Context(), queries.GetMerkleProofParams{
 		Root:    root.Bytes(),
 		Address: addr.Bytes(),
 	})

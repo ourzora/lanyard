@@ -8,10 +8,8 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
-	github.com/justinas/alice v1.2.0
 	github.com/rs/cors v1.8.2
 	github.com/rs/zerolog v1.27.0
-	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df
 	gopkg.in/DataDog/dd-trace-go.v1 v1.40.1
 )
 
@@ -47,12 +45,10 @@ require (
 	github.com/rs/xid v1.3.0 // indirect
 	github.com/tinylib/msgp v1.1.2 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	go4.org/intern v0.0.0-20211027215823-ae77deb06f29 // indirect
-	go4.org/unsafe/assume-no-moving-gc v0.0.0-20211027215541-db492cf91b37 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
+	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
-	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6 // indirect
 )

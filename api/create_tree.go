@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"encoding/hex"
@@ -40,7 +40,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 
 	tree := merkle.New(addrs)
 
-	err := s.writeQ.InsertMerkleTree(r.Context(), queries.InsertMerkleTreeParams{
+	err := s.dbq.InsertMerkleTree(r.Context(), queries.InsertMerkleTreeParams{
 		Root:      tree.Root(),
 		Addresses: addrs,
 	})
@@ -57,7 +57,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err := s.writeQ.InsertMerkleProof(r.Context(), queries.InsertMerkleProofParams{
+		err := s.dbq.InsertMerkleProof(r.Context(), queries.InsertMerkleProofParams{
 			Root:    tree.Root(),
 			Address: addr,
 			Proof:   proof,
