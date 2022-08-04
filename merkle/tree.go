@@ -7,37 +7,34 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-type Tree [][][]byte
+type option int
 
-func hashPair(a, b []byte) []byte {
-	if bytes.Compare(a, b) == -1 {
-		return crypto.Keccak256(append(a, b...))
-	}
-	return crypto.Keccak256(append(b, a...))
-}
+const (
+	sortLeaves option = iota
+	sortNodes
+)
 
-func hashMerge(level [][]byte) [][]byte {
-	var newLevel [][]byte
-	for i := 0; i < len(level); i += 2 {
-		switch {
-		case i+1 == len(level):
-			newLevel = append(newLevel, level[i])
-		default:
-			newLevel = append(newLevel, hashPair(level[i], level[i+1]))
+func has(opts []option, o option) bool {
+	for i := range opts {
+		if opts[i] == o {
+			return true
 		}
 	}
-	return newLevel
+	return false
 }
 
-func New(items [][]byte) Tree {
+type Tree [][][]byte
+
+func New(items [][]byte, opts ...option) Tree {
 	var leaves [][]byte
 	for i := range items {
 		leaves = append(leaves, crypto.Keccak256(items[i]))
 	}
-	sort.Slice(leaves, func(i, j int) bool {
-		return bytes.Compare(leaves[i], leaves[j]) == -1
-	})
-
+	if has(opts, sortLeaves) {
+		sort.Slice(leaves, func(i, j int) bool {
+			return bytes.Compare(leaves[i], leaves[j]) == -1
+		})
+	}
 	var t Tree
 	t = append(t, leaves)
 
@@ -46,9 +43,39 @@ func New(items [][]byte) Tree {
 		if len(level) == 1 {
 			break
 		}
-		t = append(t, hashMerge(level))
+		f := hashPairNoSort
+		if has(opts, sortNodes) {
+			f = hashPairSort
+		}
+		t = append(t, hashMerge(level, f))
 	}
 	return t
+}
+
+type hashPair func(a, b []byte) []byte
+
+func hashPairNoSort(a, b []byte) []byte {
+	return crypto.Keccak256(append(a, b...))
+}
+
+func hashPairSort(a, b []byte) []byte {
+	if bytes.Compare(a, b) == -1 {
+		return crypto.Keccak256(append(a, b...))
+	}
+	return crypto.Keccak256(append(b, a...))
+}
+
+func hashMerge(level [][]byte, f hashPair) [][]byte {
+	var newLevel [][]byte
+	for i := 0; i < len(level); i += 2 {
+		switch {
+		case i+1 == len(level):
+			newLevel = append(newLevel, level[i])
+		default:
+			newLevel = append(newLevel, f(level[i], level[i+1]))
+		}
+	}
+	return newLevel
 }
 
 func (t Tree) Root() []byte {
@@ -84,7 +111,7 @@ func (t Tree) Proof(target []byte) [][]byte {
 func Valid(root []byte, proof [][]byte, target []byte) bool {
 	target = crypto.Keccak256(target)
 	for i := range proof {
-		target = hashPair(target, proof[i])
+		target = hashPairSort(target, proof[i])
 	}
 	return bytes.Compare(target, root) == 0
 }
