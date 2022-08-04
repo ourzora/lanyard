@@ -29,10 +29,10 @@ func ExampleTree() {
 	tr = New(addrs)
 	fmt.Println(common.Bytes2Hex(tr.Root()))
 
-	tr = New(addrs, sortNodes)
+	tr = New(addrs, sortPairs)
 	fmt.Println(common.Bytes2Hex(tr.Root()))
 
-	tr = New(addrs, sortNodes, sortLeaves)
+	tr = New(addrs, sortPairs, sortLeaves)
 	fmt.Println(common.Bytes2Hex(tr.Root()))
 
 	// Output:
@@ -61,7 +61,7 @@ func TestRoot(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		mt := New(tc.leaves, sortNodes, sortLeaves)
+		mt := New(tc.leaves, sortPairs, sortLeaves)
 		if !bytes.Equal(mt.Root(), tc.wantRoot) {
 			t.Errorf("got: %s want: %s",
 				common.Bytes2Hex(mt.Root()),
@@ -87,7 +87,7 @@ func TestProof(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		mt := New(tc.leaves, sortNodes, sortLeaves)
+		mt := New(tc.leaves, sortPairs, sortLeaves)
 		pf := mt.Proof(tc.leaf)
 		if !Valid(mt.Root(), pf, tc.leaf) {
 			t.Error("invalid proof")

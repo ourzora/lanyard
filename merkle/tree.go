@@ -11,7 +11,7 @@ type option int
 
 const (
 	sortLeaves option = iota
-	sortNodes
+	sortPairs
 )
 
 func has(opts []option, o option) bool {
@@ -44,7 +44,7 @@ func New(items [][]byte, opts ...option) Tree {
 			break
 		}
 		f := hashPairNoSort
-		if has(opts, sortNodes) {
+		if has(opts, sortPairs) {
 			f = hashPairSort
 		}
 		t = append(t, hashMerge(level, f))
