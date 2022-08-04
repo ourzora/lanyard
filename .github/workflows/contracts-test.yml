@@ -17,6 +17,7 @@ env:
 
 jobs:
   tests:
+    name: Test contracts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
