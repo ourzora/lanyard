@@ -1,7 +1,7 @@
 name: deploy-api
 on:
   push:
-    branches: [main, m/api]
+    branches: [main]
     paths:
       - "cmd/api/**"
       - "api/**"
