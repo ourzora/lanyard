@@ -1,0 +1,49 @@
+name: contracts-test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "contracts/**"
+      - ".github/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "contracts/**"
+      - ".github/**"
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
+        working-directory: ./contracts
+
+      - name: Run Forge snapshot
+        run: forge snapshot --check
+        id: snapshot
+        working-directory: ./contracts
+
+      - name: Run tests
+        run: forge test
+        id: test
+        working-directory: ./contracts
+        env:
+          # Only fuzz intensely if we're running this action on a push to main or for a PR going into main:
+          FOUNDRY_PROFILE: ${{ (github.ref == 'refs/heads/main' || github.base_ref == 'main') && 'intense' }}
