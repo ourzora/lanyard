@@ -1,0 +1,54 @@
+app = "allowlist-api"
+kill_signal = "SIGINT"
+kill_timeout = 120
+processes = []
+
+[deploy]
+  strategy = "canary"
+
+[env]
+  AL_API_ENV = "production"
+  DD_AGENT_HOST = "datadog-agent.internal"
+  DD_ENV = "production"
+  DD_SERVICE = "allowlist-api"
+  PORT = "8080"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+  cmd = []
+  entrypoint = []
+  exec = []
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+  tcp_checks = []
+  [services.concurrency]
+    hard_limit = 30
+    soft_limit = 10
+    type = "connections"
+
+  [[services.http_checks]]
+    grace_period = "2s"
+    interval = "10s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    restart_limit = 0
+    timeout = "2s"
+    tls_skip_verify = false
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
