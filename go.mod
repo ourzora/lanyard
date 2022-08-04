@@ -1,4 +1,4 @@
-module al
+module github.com/contextart/al
 
 go 1.19
 
