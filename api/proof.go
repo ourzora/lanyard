@@ -16,7 +16,7 @@ type getProofResp struct {
 func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	var (
 		root = r.URL.Query().Get("root")
-		leaf = r.URL.Query().Get("leaf")
+		leaf = r.URL.Query().Get("unhashedLeaf")
 	)
 	if root == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")

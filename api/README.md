@@ -35,7 +35,7 @@ Response Body:
 ```
 
 ```
-GET /api/v1/proof?root={root}&leaf={unhashedLeaf}
+GET /api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
 
 Response Body:
 {
