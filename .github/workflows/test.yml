@@ -1,12 +1,6 @@
-name: go-test
+name: tests
 
-on:
-  pull_request:
-    paths:
-      - "merkle/**"
-      - "cmd/**"
-      - "api/**"
-      - ".github/**"
+on: [pull_request]
 
 jobs:
   build:
