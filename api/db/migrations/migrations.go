@@ -35,6 +35,9 @@ var Migrations = []migrate.Migration{
 			ALTER TABLE merkle_proofs
 			ADD COLUMN unhashed_leaf bytea NOT NULL;
 
+			ALTER TABLE merkle_proofs
+			ALTER COLUMN address
+			DROP NOT NULL;
 		`,
 	},
 }
