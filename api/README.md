@@ -7,10 +7,12 @@ POST /api/v1/tree
 
 Request Body:
 {
-  "allowedAddresses": [
-    "0x0000000000000000000000000000000000000001",
-    "0x0000000000000000000000000000000000000002"
-  ]
+    "unhashedLeaves": [
+        "0x0000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000002"
+    ],
+    "leafTypeDescriptor": "address",
+    "packedEncoding": true
 }
 
 Response Body:
@@ -20,21 +22,20 @@ Response Body:
 ```
 
 ```
-GET /api/v1/tree/?root={root}&cursor={cursor}
+GET /api/v1/tree?root={root}
 
 Response Body:
 {
-  "allowedAddresses": [
+  "unhashedLeaves": [
     "0x0000000000000000000000000000000000000001",
     "0x0000000000000000000000000000000000000002"
   ],
-  "cursor": "2", // or null if there are no more results
-  "totalAddressCount": 400
+  "leafCount": 2
 }
 ```
 
 ```
-GET /api/v1/proof?root={root}&address={address}
+GET /api/v1/proof?root={root}&leaf={unhashedLeaf}
 
 Response Body:
 {

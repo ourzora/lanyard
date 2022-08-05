@@ -15,42 +15,34 @@ type getProofResp struct {
 
 func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	var (
-		rootStr = r.URL.Query().Get("root")
-		addrStr = r.URL.Query().Get("address")
+		root = r.URL.Query().Get("root")
+		leaf = r.URL.Query().Get("leaf")
 	)
-	if rootStr == "" || addrStr == "" {
-		s.sendJSONError(r, w, nil, http.StatusBadRequest, "need to provide both a merkle root and an address")
+	if root == "" {
+		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
-
-	var root common.Hash
-	if err := root.UnmarshalText([]byte(rootStr)); err != nil {
-		s.sendJSONError(r, w, err, http.StatusBadRequest, "invalid merkle root")
+	if leaf == "" {
+		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing leaf")
 		return
 	}
-
-	var addr common.Address
-	if err := addr.UnmarshalText([]byte(addrStr)); err != nil {
-		s.sendJSONError(r, w, err, http.StatusBadRequest, "invalid address")
-		return
-	}
-
-	proof, err := s.dbq.GetMerkleProof(r.Context(), queries.GetMerkleProofParams{
-		Root:    root.Bytes(),
-		Address: addr.Bytes(),
+	proof, err := s.dbq.SelectProof(r.Context(), queries.SelectProofParams{
+		Root:         common.Hex2Bytes(root),
+		UnhashedLeaf: common.Hex2Bytes(leaf),
 	})
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "failed to retrieve proof")
 		return
 	}
 
-	// cache for 1 year
-	w.Header().Set("Cache-Control", "public, max-age=31536000")
-
-	proofStrs := make([]string, 0, len(proof))
-	for _, proofHash := range proof {
-		proofStrs = append(proofStrs, common.BytesToHash(proofHash).String())
+	resp := &getProofResp{
+		Proof: make([]string, 0, len(proof)),
+	}
+	for i := range proof {
+		resp.Proof = append(resp.Proof, common.BytesToHash(proof[i]).String())
 	}
 
-	s.sendJSON(r, w, getProofResp{Proof: proofStrs})
+	// cache for 1 year
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
+	s.sendJSON(r, w, resp)
 }

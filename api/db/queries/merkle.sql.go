@@ -9,62 +9,80 @@ import (
 	"context"
 )
 
-const getAddressesForMerkleTree = `-- name: GetAddressesForMerkleTree :one
-select addresses from merkle_trees where root = $1
+const insertProof = `-- name: InsertProof :exec
+insert into merkle_proofs (root, unhashed_leaf, address, proof)
+values ($1, $2, $3, $4)
+on conflict (root, unhashed_leaf) do nothing
 `
 
-func (q *Queries) GetAddressesForMerkleTree(ctx context.Context, root []byte) ([][]byte, error) {
-	row := q.db.QueryRow(ctx, getAddressesForMerkleTree, root)
-	var addresses [][]byte
-	err := row.Scan(&addresses)
-	return addresses, err
+type InsertProofParams struct {
+	Root         []byte   `json:"root"`
+	UnhashedLeaf []byte   `json:"unhashedLeaf"`
+	Address      []byte   `json:"address"`
+	Proof        [][]byte `json:"proof"`
 }
 
-const getMerkleProof = `-- name: GetMerkleProof :one
-select proof from merkle_proofs where root = $1 and address = $2
-`
-
-type GetMerkleProofParams struct {
-	Root    []byte `json:"root"`
-	Address []byte `json:"address"`
-}
-
-func (q *Queries) GetMerkleProof(ctx context.Context, arg GetMerkleProofParams) ([][]byte, error) {
-	row := q.db.QueryRow(ctx, getMerkleProof, arg.Root, arg.Address)
-	var proof [][]byte
-	err := row.Scan(&proof)
-	return proof, err
-}
-
-const insertMerkleProof = `-- name: InsertMerkleProof :exec
-insert into merkle_proofs (root, address, proof)
-values ($1, $2, $3)
-on conflict (root, address) do nothing
-`
-
-type InsertMerkleProofParams struct {
-	Root    []byte   `json:"root"`
-	Address []byte   `json:"address"`
-	Proof   [][]byte `json:"proof"`
-}
-
-func (q *Queries) InsertMerkleProof(ctx context.Context, arg InsertMerkleProofParams) error {
-	_, err := q.db.Exec(ctx, insertMerkleProof, arg.Root, arg.Address, arg.Proof)
+func (q *Queries) InsertProof(ctx context.Context, arg InsertProofParams) error {
+	_, err := q.db.Exec(ctx, insertProof,
+		arg.Root,
+		arg.UnhashedLeaf,
+		arg.Address,
+		arg.Proof,
+	)
 	return err
 }
 
-const insertMerkleTree = `-- name: InsertMerkleTree :exec
-insert into merkle_trees (root, addresses)
-values ($1, $2)
+const insertTree = `-- name: InsertTree :exec
+insert into merkle_trees (root, unhashed_leaves, ltd, packed)
+values ($1, $2, $3, $4)
 on conflict (root) do nothing
 `
 
-type InsertMerkleTreeParams struct {
-	Root      []byte   `json:"root"`
-	Addresses [][]byte `json:"addresses"`
+type InsertTreeParams struct {
+	Root           []byte   `json:"root"`
+	UnhashedLeaves [][]byte `json:"unhashedLeaves"`
+	Ltd            []string `json:"ltd"`
+	Packed         bool     `json:"packed"`
 }
 
-func (q *Queries) InsertMerkleTree(ctx context.Context, arg InsertMerkleTreeParams) error {
-	_, err := q.db.Exec(ctx, insertMerkleTree, arg.Root, arg.Addresses)
+func (q *Queries) InsertTree(ctx context.Context, arg InsertTreeParams) error {
+	_, err := q.db.Exec(ctx, insertTree,
+		arg.Root,
+		arg.UnhashedLeaves,
+		arg.Ltd,
+		arg.Packed,
+	)
 	return err
+}
+
+const selectLeaves = `-- name: SelectLeaves :one
+select unhashed_leaves
+from merkle_trees
+where root = $1
+`
+
+func (q *Queries) SelectLeaves(ctx context.Context, root []byte) ([][]byte, error) {
+	row := q.db.QueryRow(ctx, selectLeaves, root)
+	var unhashed_leaves [][]byte
+	err := row.Scan(&unhashed_leaves)
+	return unhashed_leaves, err
+}
+
+const selectProof = `-- name: SelectProof :one
+select proof
+from merkle_proofs
+where root = $1
+and unhashed_leaf = $2
+`
+
+type SelectProofParams struct {
+	Root         []byte `json:"root"`
+	UnhashedLeaf []byte `json:"unhashedLeaf"`
+}
+
+func (q *Queries) SelectProof(ctx context.Context, arg SelectProofParams) ([][]byte, error) {
+	row := q.db.QueryRow(ctx, selectProof, arg.Root, arg.UnhashedLeaf)
+	var proof [][]byte
+	err := row.Scan(&proof)
+	return proof, err
 }
