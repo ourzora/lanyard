@@ -3,7 +3,7 @@
 ## Endpoints
 
 ```
-POST /api/v1/merkle
+POST /api/v1/tree
 
 Request Body:
 {
@@ -20,7 +20,7 @@ Response Body:
 ```
 
 ```
-GET /api/v1/merkle/{merkleRoot}?cursor={cursor}
+GET /api/v1/tree/?root={root}&cursor={cursor}
 
 Response Body:
 {
@@ -34,7 +34,7 @@ Response Body:
 ```
 
 ```
-GET /api/v1/merkle/{merkleRoot}/proof/{address}
+GET /api/v1/proof?root={root}&address={address}
 
 Response Body:
 {

@@ -9,11 +9,11 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-type retreiveProofResponseBody struct {
+type getProofResp struct {
 	Proof []string `json:"proof"`
 }
 
-func (s *Server) RetrieveProof(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	var (
 		rootStr = r.URL.Query().Get("root")
 		addrStr = r.URL.Query().Get("address")
@@ -52,7 +52,5 @@ func (s *Server) RetrieveProof(w http.ResponseWriter, r *http.Request) {
 		proofStrs = append(proofStrs, common.BytesToHash(proofHash).String())
 	}
 
-	s.sendJSON(r, w, retreiveProofResponseBody{
-		Proof: proofStrs,
-	})
+	s.sendJSON(r, w, getProofResp{Proof: proofStrs})
 }
