@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
 	"runtime/debug"
 
 	"github.com/contextart/al/api"
+	"github.com/contextart/al/api/db/migrations"
+	"github.com/contextart/al/migrate"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -50,6 +54,15 @@ func main() {
 	dbc.MaxConns = 20
 	db, err := pgxpool.ConnectConfig(ctx, dbc)
 	check(err)
+
+	//The migrate package wants a database/sql type
+	//In the future, migrate may support pgx but for
+	//now we open and close a connection for running
+	//migrations.
+	mdb, err := sql.Open("pgx", dburl)
+	check(err)
+	check(migrate.Run(ctx, mdb, migrations.Migrations))
+	check(mdb.Close())
 
 	s := api.New(db)
 

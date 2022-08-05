@@ -4,7 +4,9 @@
 
 package queries
 
-import ()
+import (
+	"time"
+)
 
 type MerkleProof struct {
 	Root    []byte   `json:"root"`
@@ -15,4 +17,11 @@ type MerkleProof struct {
 type MerkleTree struct {
 	Root      []byte   `json:"root"`
 	Addresses [][]byte `json:"addresses"`
+}
+
+type Migration struct {
+	Filename  string    `json:"filename"`
+	Hash      string    `json:"hash"`
+	AppliedAt time.Time `json:"appliedAt"`
+	Index     int32     `json:"index"`
 }

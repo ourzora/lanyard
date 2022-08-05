@@ -2,7 +2,7 @@ version: 1
 packages:
   - name: "queries"
     path: "db/queries"
-    schema: "db/sql/migrations"
+    schema: "schema.sql"
     queries: "db/sql/queries"
     engine: "postgresql"
     sql_package: "pgx/v4"
