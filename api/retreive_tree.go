@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/contextart/al/api/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v4"
 )
@@ -55,10 +54,10 @@ func (s *Server) RetrieveTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var nextCursor *string
+	var nextCursor string
 	nextCursorOffset := currentCursor + maxAddressesPerPage
 	if nextCursorOffset < len(addresses) {
-		nextCursor = utils.Ptr(strconv.Itoa(nextCursorOffset))
+		nextCursor = strconv.Itoa(nextCursorOffset)
 	}
 
 	endOfPageIndex := currentCursor + maxAddressesPerPage
@@ -70,7 +69,7 @@ func (s *Server) RetrieveTree(w http.ResponseWriter, r *http.Request) {
 
 	s.sendJSON(r, w, retreiveHashResponseBody{
 		AllowedAddresses:  addressBytesToAddresses(addrBytes),
-		Cursor:            nextCursor,
+		Cursor:            &nextCursor,
 		TotalAddressCount: len(addresses),
 	})
 }
