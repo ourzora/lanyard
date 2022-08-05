@@ -22,7 +22,7 @@ POST /api/v1/tree
 `.trim()
 
 const lookupCode = `
-GET /api/v1/tree/?root={root}&cursor={cursor}
+GET /api/v1/tree?root={root}&cursor={cursor}
 
 // Response body
 {
