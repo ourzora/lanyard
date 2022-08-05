@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
-	"strconv"
 
 	"github.com/contextart/al/api"
 	"github.com/jackc/pgx/v4"
@@ -36,17 +35,6 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	zerolog.CallerMarshalFunc = func(file string, line int) string {
-		short := file
-		for i := len(file) - 1; i > 0; i-- {
-			if file[i] == '/' {
-				short = file[i+1:]
-				break
-			}
-		}
-		file = short
-		return file + ":" + strconv.Itoa(line)
-	}
 	var (
 		logger = log.Logger.With().Caller().Logger()
 		ctx    = logger.WithContext(context.Background())
