@@ -11,4 +11,5 @@ export function isErrorResponse(value: unknown): value is ErrorResponse {
 
 export type CreateMerkleResponse = {
   merkleRoot: string
+  abiSig: string
 }

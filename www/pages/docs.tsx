@@ -1,49 +1,54 @@
 import CodeBlock from 'components/CodeBlock'
 
 const createCode = `
-POST /api/v1/merkle
+POST /api/v1/tree
 
 // Request body
 {
-  "allowedAddresses": [
+  "unhashedLeaves": [
     "0x0000000000000000000000000000000000000001",
     "0x0000000000000000000000000000000000000002"
-  ]
+  ],
+  // abiSig defaults to \`address\`, but you can pass something else
+  // if you have different data requirements
+  "abiSig": "address,uint256,uint256"
 }
 
 // Response body
 {
-  "merkleRoot": "0x000000000000000000000000000000000000000000000000000000000000000f"
+  "merkleRoot": "0x000000000000000000000000000000000000000000000000000000000000000f",
+  "abiSig": "address,uint256,uint256"
 }
 `.trim()
 
 const lookupCode = `
-GET /api/v1/merkle/{merkleRoot}?cursor={cursor}
+GET /api/v1/tree/?root={root}&cursor={cursor}
 
 // Response body
 {
-  "allowedAddresses": [
+  "unhashedLeaves": [
     "0x0000000000000000000000000000000000000001",
     "0x0000000000000000000000000000000000000002"
   ],
   "cursor": "2", // or null if there are no more results
-  "totalAddressCount": 400
+  "totalLeafCount": 400,
+  "abiSig": "address" // defaults to address
 }
 `.trim()
 
 const proofCode = `
-GET /api/v1/merkle/{merkleRoot}/proof/{address}
+GET /api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
 
 // Response body
 {
-  "proof": [ // or empty if the address is not in the merkle tree
+  "proof": [ // or empty if the unhashed leaf is not in the merkle tree
     "0x0000000000000000000000000000000000000001",
     "0x0000000000000000000000000000000000000002"
   ]
 }
 `.trim()
 
-export default function PrimaryMarketplacesPage() {
+export default function Docs() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="font-bold text-3xl">API Documentation</h1>
@@ -59,7 +64,8 @@ export default function PrimaryMarketplacesPage() {
       <Heading>Looking up a Merkle tree</Heading>
       <CodeBlock code={lookupCode} language="javascript" />
 
-      <Heading>Getting proof for an address in a Merkle tree</Heading>
+      <Heading>Getting proof for a value in a Merkle tree</Heading>
+      <p>Typically the unhashed leaf value will be an address.</p>
       <CodeBlock code={proofCode} language="javascript" />
     </div>
   )

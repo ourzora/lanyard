@@ -42,7 +42,7 @@ export async function createMerkleRoot(
   addresses: string[],
 ): Promise<CreateMerkleResponse | ErrorResponse> {
   const res = await client('POST', 'v1/merkle', {
-    allowedAddresses: addresses,
+    unhashedLeaves: addresses,
   })
 
   if (!res.ok) {
