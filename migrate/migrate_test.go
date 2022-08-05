@@ -2,6 +2,8 @@ package migrate
 
 import (
 	"context"
+	"errors"
+	"reflect"
 	"testing"
 
 	"blake.io/pqx/pqxtest"
@@ -44,7 +46,6 @@ func TestMigrateConcurrent(t *testing.T) {
 	}
 }
 
-/*
 func TestFilterApplied(t *testing.T) {
 	const migrationTable = `
 		CREATE SEQUENCE IF NOT EXISTS migration_seq
@@ -89,7 +90,7 @@ func TestFilterApplied(t *testing.T) {
 		{
 			initSQL: migrationTable + oneMigration,
 			migs:    []Migration{{Name: "x", SQL: "a"}},
-			want:    nil,
+			want:    []Migration{},
 		},
 		{
 			initSQL: `SELECT 1;`,
@@ -113,7 +114,7 @@ func TestFilterApplied(t *testing.T) {
 		{
 			initSQL: migrationTable + oneMigration,
 			migs:    []Migration{{Name: "x1", SQL: "a"}},
-			want:    nil,
+			want:    []Migration{},
 		},
 	}
 
@@ -202,4 +203,3 @@ func TestFilterAppliedError(t *testing.T) {
 		}
 	}
 }
-*/
