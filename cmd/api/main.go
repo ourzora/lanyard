@@ -74,6 +74,6 @@ func main() {
 		Addr:    listen,
 		Handler: s.Handler(env, GitSha),
 	}
-	log.Ctx(ctx).Info().Str("listen", listen).Msg("http server")
+	log.Ctx(ctx).Info().Str("listen", listen).Str("git-sha", GitSha).Msg("http server")
 	check(hs.ListenAndServe())
 }
