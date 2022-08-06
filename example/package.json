@@ -1,0 +1,13 @@
+{
+  "name": "tests",
+  "version": "0.0.3",
+  "module": "src/index.js",
+  "devDependencies": {
+    "bun-types": "latest",
+    "prettier": "^2.7.1"
+  },
+  "dependencies": {
+    "ethers": "^5.6.9",
+    "merkletreejs": "^0.2.32"
+  }
+}

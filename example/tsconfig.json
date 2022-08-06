@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": ["bun-types"],
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
