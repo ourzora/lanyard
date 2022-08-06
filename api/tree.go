@@ -102,9 +102,9 @@ func (jnb *jsonNullBool) UnmarshalJSON(d []byte) error {
 }
 
 type createTreeReq struct {
-	leaves []hexutil.Bytes `json:"unhashedLeaves"`
-	ltd    []string        `json:"leafTypeDescriptor"`
-	packed jsonNullBool    `json:"packedEncoding"`
+	Leaves []string     `json:"unhashedLeaves"`
+	Ltd    []string     `json:"leafTypeDescriptor"`
+	Packed jsonNullBool `json:"packedEncoding"`
 }
 
 type createTreeResp struct {
@@ -118,21 +118,21 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		s.sendJSONError(r, w, err, http.StatusBadRequest, "unhashedLeaves must be a list of hex strings")
 		return
 	}
-	if len(req.leaves) == 0 {
+	if len(req.Leaves) == 0 {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "No leaves provided")
 		return
 	}
 
 	var leaves [][]byte
-	for i := range req.leaves {
-		leaves = append(leaves, req.leaves[i])
+	for i := range req.Leaves {
+		leaves = append(leaves, []byte(req.Leaves[i]))
 	}
 	tree := merkle.New(leaves)
 	err := s.dbq.InsertTree(r.Context(), queries.InsertTreeParams{
 		Root:           tree.Root(),
 		UnhashedLeaves: leaves,
-		Ltd:            req.ltd,
-		Packed:         req.packed.NullBool,
+		Ltd:            req.Ltd,
+		Packed:         req.Packed.NullBool,
 	})
 	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to insert merkle tree")
@@ -148,7 +148,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		err := s.dbq.InsertProof(r.Context(), queries.InsertProofParams{
 			Root:         tree.Root(),
 			UnhashedLeaf: leaf,
-			Address:      leaf2Addr(leaf, req.ltd, req.packed.Bool).Bytes(),
+			Address:      leaf2Addr(leaf, req.Ltd, req.Packed.Bool).Bytes(),
 			Proof:        proof,
 		})
 		if err != nil {

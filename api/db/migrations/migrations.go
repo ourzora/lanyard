@@ -16,7 +16,7 @@ var Migrations = []migrate.Migration{
 				address bytea NOT NULL,
 				proof bytea[] NOT NULL
 			);
-			CREATE UNIQUE INDEX  ON merkle_proofs(root, address);
+			CREATE UNIQUE INDEX ON merkle_proofs(root, address);
 		`,
 	},
 	{
@@ -37,6 +37,9 @@ var Migrations = []migrate.Migration{
 			ALTER TABLE merkle_proofs
 			ALTER COLUMN address
 			DROP NOT NULL;
+
+			DROP INDEX merkle_proofs_root_address_idx;
+			CREATE UNIQUE INDEX on merkle_proofs(root, unhashed_leaf);
 		`,
 	},
 }

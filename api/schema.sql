@@ -62,7 +62,7 @@ ALTER TABLE ONLY public.migrations
 
 
 
-CREATE UNIQUE INDEX merkle_proofs_root_address_idx ON public.merkle_proofs USING btree (root, address);
+CREATE UNIQUE INDEX merkle_proofs_root_unhashed_leaf_idx ON public.merkle_proofs USING btree (root, unhashed_leaf);
 
 
 
