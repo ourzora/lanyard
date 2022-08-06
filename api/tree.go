@@ -102,9 +102,9 @@ func (jnb *jsonNullBool) UnmarshalJSON(d []byte) error {
 }
 
 type createTreeReq struct {
-	Leaves []string     `json:"unhashedLeaves"`
-	Ltd    []string     `json:"leafTypeDescriptor"`
-	Packed jsonNullBool `json:"packedEncoding"`
+	Leaves []hexutil.Bytes `json:"unhashedLeaves"`
+	Ltd    []string        `json:"leafTypeDescriptor"`
+	Packed jsonNullBool    `json:"packedEncoding"`
 }
 
 type createTreeResp struct {
@@ -125,7 +125,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 
 	var leaves [][]byte
 	for i := range req.Leaves {
-		leaves = append(leaves, []byte(req.Leaves[i]))
+		leaves = append(leaves, req.Leaves[i])
 	}
 	tree := merkle.New(leaves)
 	err := s.dbq.InsertTree(r.Context(), queries.InsertTreeParams{
@@ -175,8 +175,7 @@ func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
-
-	leaves, err := s.dbq.SelectLeaves(r.Context(), common.Hex2Bytes(root))
+	leaves, err := s.dbq.SelectLeaves(r.Context(), common.FromHex(root))
 	if errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, err, http.StatusNotFound, "tree not found for root")
 		return
