@@ -5,6 +5,7 @@
 package queries
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -16,10 +17,10 @@ type MerkleProof struct {
 }
 
 type MerkleTree struct {
-	Root           []byte   `json:"root"`
-	UnhashedLeaves [][]byte `json:"unhashedLeaves"`
-	Ltd            []string `json:"ltd"`
-	Packed         bool     `json:"packed"`
+	Root           []byte       `json:"root"`
+	UnhashedLeaves [][]byte     `json:"unhashedLeaves"`
+	Ltd            []string     `json:"ltd"`
+	Packed         sql.NullBool `json:"packed"`
 }
 
 type Migration struct {

@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 )
 
 const insertProof = `-- name: InsertProof :exec
@@ -39,10 +40,10 @@ on conflict (root) do nothing
 `
 
 type InsertTreeParams struct {
-	Root           []byte   `json:"root"`
-	UnhashedLeaves [][]byte `json:"unhashedLeaves"`
-	Ltd            []string `json:"ltd"`
-	Packed         bool     `json:"packed"`
+	Root           []byte       `json:"root"`
+	UnhashedLeaves [][]byte     `json:"unhashedLeaves"`
+	Ltd            []string     `json:"ltd"`
+	Packed         sql.NullBool `json:"packed"`
 }
 
 func (q *Queries) InsertTree(ctx context.Context, arg InsertTreeParams) error {

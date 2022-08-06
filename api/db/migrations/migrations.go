@@ -26,11 +26,10 @@ var Migrations = []migrate.Migration{
 			RENAME COLUMN addresses TO unhashed_leaves;
 
 			ALTER TABLE merkle_trees
-			ADD COLUMN ltd text[] NOT NULL;
+			ADD COLUMN ltd text[];
 
 			ALTER TABLE merkle_trees
-			ADD COLUMN packed boolean NOT NULL;
-
+			ADD COLUMN packed boolean;
 
 			ALTER TABLE merkle_proofs
 			ADD COLUMN unhashed_leaf bytea NOT NULL;

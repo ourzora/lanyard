@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -27,12 +28,6 @@ func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unsupported method", http.StatusMethodNotAllowed)
 		return
 	}
-}
-
-type createTreeReq struct {
-	leaves []hexutil.Bytes `json:"unhashedLeaves"`
-	ltd    []string        `json:"leafTypeDescriptor"`
-	packed bool            `json:"packedEncoding"`
 }
 
 func leaf2Addr(leaf []byte, ltd []string, packed bool) common.Address {
@@ -87,6 +82,31 @@ func addrPacked(leaf []byte, ltd []string) common.Address {
 	return common.Address{}
 }
 
+type jsonNullBool struct {
+	sql.NullBool
+}
+
+func (jnb *jsonNullBool) UnmarshalJSON(d []byte) error {
+	var b *bool
+	if err := json.Unmarshal(d, &b); err != nil {
+		return err
+	}
+	if b == nil {
+		jnb.Valid = false
+		return nil
+	}
+
+	jnb.Valid = true
+	jnb.Bool = *b
+	return nil
+}
+
+type createTreeReq struct {
+	leaves []hexutil.Bytes `json:"unhashedLeaves"`
+	ltd    []string        `json:"leafTypeDescriptor"`
+	packed jsonNullBool    `json:"packedEncoding"`
+}
+
 type createTreeResp struct {
 	MerkleRoot string `json:"merkleRoot"`
 }
@@ -107,13 +127,12 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 	for i := range req.leaves {
 		leaves = append(leaves, req.leaves[i])
 	}
-
 	tree := merkle.New(leaves)
 	err := s.dbq.InsertTree(r.Context(), queries.InsertTreeParams{
 		Root:           tree.Root(),
 		UnhashedLeaves: leaves,
 		Ltd:            req.ltd,
-		Packed:         req.packed,
+		Packed:         req.packed.NullBool,
 	})
 	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to insert merkle tree")
@@ -129,7 +148,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		err := s.dbq.InsertProof(r.Context(), queries.InsertProofParams{
 			Root:         tree.Root(),
 			UnhashedLeaf: leaf,
-			Address:      leaf2Addr(leaf, req.ltd, req.packed).Bytes(),
+			Address:      leaf2Addr(leaf, req.ltd, req.packed.Bool).Bytes(),
 			Proof:        proof,
 		})
 		if err != nil {
