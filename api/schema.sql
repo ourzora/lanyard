@@ -18,15 +18,18 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.merkle_proofs (
     root bytea NOT NULL,
-    address bytea NOT NULL,
-    proof bytea[] NOT NULL
+    address bytea,
+    proof bytea[] NOT NULL,
+    unhashed_leaf bytea NOT NULL
 );
 
 
 
 CREATE TABLE public.merkle_trees (
     root bytea NOT NULL,
-    addresses bytea[] NOT NULL
+    unhashed_leaves bytea[] NOT NULL,
+    ltd text[],
+    packed boolean
 );
 
 
@@ -59,7 +62,7 @@ ALTER TABLE ONLY public.migrations
 
 
 
-CREATE UNIQUE INDEX merkle_proofs_root_address_idx ON public.merkle_proofs USING btree (root, address);
+CREATE UNIQUE INDEX merkle_proofs_root_unhashed_leaf_idx ON public.merkle_proofs USING btree (root, unhashed_leaf);
 
 
 

@@ -5,18 +5,22 @@
 package queries
 
 import (
+	"database/sql"
 	"time"
 )
 
 type MerkleProof struct {
-	Root    []byte   `json:"root"`
-	Address []byte   `json:"address"`
-	Proof   [][]byte `json:"proof"`
+	Root         []byte   `json:"root"`
+	Address      []byte   `json:"address"`
+	Proof        [][]byte `json:"proof"`
+	UnhashedLeaf []byte   `json:"unhashedLeaf"`
 }
 
 type MerkleTree struct {
-	Root      []byte   `json:"root"`
-	Addresses [][]byte `json:"addresses"`
+	Root           []byte       `json:"root"`
+	UnhashedLeaves [][]byte     `json:"unhashedLeaves"`
+	Ltd            []string     `json:"ltd"`
+	Packed         sql.NullBool `json:"packed"`
 }
 
 type Migration struct {

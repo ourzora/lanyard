@@ -1,15 +1,20 @@
--- name: InsertMerkleTree :exec
-insert into merkle_trees (root, addresses)
-values ($1, $2)
+-- name: InsertTree :exec
+insert into merkle_trees (root, unhashed_leaves, ltd, packed)
+values ($1, $2, $3, $4)
 on conflict (root) do nothing;
 
--- name: GetAddressesForMerkleTree :one
-select addresses from merkle_trees where root = $1;
+-- name: SelectLeaves :one
+select unhashed_leaves
+from merkle_trees
+where root = $1;
 
--- name: InsertMerkleProof :exec
-insert into merkle_proofs (root, address, proof)
-values ($1, $2, $3)
-on conflict (root, address) do nothing;
+-- name: InsertProof :exec
+insert into merkle_proofs (root, unhashed_leaf, address, proof)
+values ($1, $2, $3, $4)
+on conflict (root, unhashed_leaf) do nothing;
 
--- name: GetMerkleProof :one
-select proof from merkle_proofs where root = $1 and address = $2;
+-- name: SelectProof :one
+select proof
+from merkle_proofs
+where root = $1
+and unhashed_leaf = $2;
