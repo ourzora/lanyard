@@ -27,8 +27,8 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	proof, err := s.dbq.SelectProof(r.Context(), queries.SelectProofParams{
-		Root:         common.Hex2Bytes(root),
-		UnhashedLeaf: common.Hex2Bytes(leaf),
+		Root:         common.FromHex(root),
+		UnhashedLeaf: common.FromHex(leaf),
 	})
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "failed to retrieve proof")
