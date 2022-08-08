@@ -61,8 +61,8 @@ const getProofForUnhashedLeaf = async (
   return await proofRes.json()
 }
 
-/** Using this endpoint is discouraged. When possible, pass `unhashedLeaf` instead */
-const getProofForAddress = async (
+/** When possible, use `unhashedLeaf` instead of `address` */
+const getProofForIndexedAddress = async (
   merkleRoot: string,
   address: string,
 ): Promise<{ proof: string[] }> => {
@@ -91,6 +91,23 @@ const makeMerkleTree = (leafData: string[]) =>
     sortPairs: true,
   })
 
+const checkRootEquality = (remote: string, local: string) => {
+  if (remote !== local) {
+    throw new Error(`Remote root ${remote} does not match local root ${local}`)
+  }
+}
+
+const strArrEqual = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((v, i) => v === b[i])
+
+const checkProofEquality = (remote: string[], local: string[]) => {
+  if (!strArrEqual(remote, local)) {
+    throw new Error(
+      `Remote proof ${remote} does not match local proof ${local}`,
+    )
+  }
+}
+
 // health check
 
 const healthRes = await fetch(`${baseUrl}/health`, {
@@ -116,11 +133,11 @@ const unhashedLeaves = [
 
 const { merkleRoot: basicMerkleRoot } = await createTree(unhashedLeaves)
 
-console.log('merkle root', basicMerkleRoot)
-console.log('local merkle root', makeMerkleTree(unhashedLeaves).getHexRoot())
+console.log('basic merkle root', basicMerkleRoot)
+checkRootEquality(basicMerkleRoot, makeMerkleTree(unhashedLeaves).getHexRoot())
 
-const { leafCount: basicLeafCount } = await getTree(basicMerkleRoot)
-console.log('leaf count', basicLeafCount)
+const basicTree = await getTree(basicMerkleRoot)
+console.log('basic leaf count', basicTree.leafCount)
 
 const { proof: basicProof } = await getProofForUnhashedLeaf(
   basicMerkleRoot,
@@ -128,8 +145,8 @@ const { proof: basicProof } = await getProofForUnhashedLeaf(
 )
 
 console.log('proof', basicProof)
-console.log(
-  'local proof',
+checkProofEquality(
+  basicProof,
   makeMerkleTree(unhashedLeaves).getHexProof(
     utils.keccak256(unhashedLeaves[0]),
   ),
@@ -159,8 +176,8 @@ const { merkleRoot: encodedMerkleRoot } = await createTree(
 )
 
 console.log('encoded tree', encodedMerkleRoot)
-console.log(
-  'local encoded merkle root',
+checkRootEquality(
+  encodedMerkleRoot,
   makeMerkleTree(encodedLeafData).getHexRoot(),
 )
 
@@ -170,8 +187,8 @@ const { proof: encodedProof } = await getProofForUnhashedLeaf(
 )
 
 console.log('encoded proof', encodedProof)
-console.log(
-  'local encoded proof',
+checkProofEquality(
+  encodedProof,
   makeMerkleTree(encodedLeafData).getHexProof(
     utils.keccak256(encodedLeafData[0]),
   ),
@@ -190,8 +207,8 @@ const { merkleRoot: encodedPackedMerkleRoot } = await createTree(
 )
 
 console.log('encoded packed tree', encodedPackedMerkleRoot)
-console.log(
-  'local encoded packed merkle root',
+checkRootEquality(
+  encodedPackedMerkleRoot,
   makeMerkleTree(encodedPackedLeafData).getHexRoot(),
 )
 
@@ -201,15 +218,24 @@ const { proof: encodedPackedProof } = await getProofForUnhashedLeaf(
 )
 
 console.log('encoded packed proof', encodedPackedProof)
-console.log(
-  'local encoded packed proof',
+checkProofEquality(
+  encodedPackedProof,
   makeMerkleTree(encodedPackedLeafData).getHexProof(
     utils.keccak256(encodedPackedLeafData[0]),
   ),
 )
 
-const { proof: encodedPackedProofByAddress } = await getProofForAddress(
+const { proof: encodedPackedProofByAddress } = await getProofForIndexedAddress(
   encodedPackedMerkleRoot,
   num2Addr(1),
 )
-console.log('encoded packed proof by address', encodedPackedProofByAddress)
+console.log(
+  'encoded packed proof by indexed address',
+  encodedPackedProofByAddress,
+)
+checkProofEquality(
+  encodedPackedProofByAddress,
+  makeMerkleTree(encodedPackedLeafData).getHexProof(
+    utils.keccak256(encodedPackedLeafData[0]),
+  ),
+)
