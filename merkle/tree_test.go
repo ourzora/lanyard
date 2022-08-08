@@ -115,8 +115,6 @@ func TestProofFiveAddresses(t *testing.T) {
 
 	tree := New(addrs, SortPairs)
 
-	t.Logf("root is %x", tree.Root())
-
 	proofs := [][]string{
 		{
 			"d52688a8f926c816ca1e079067caba944f158e764817b83fc43594370ca9cf62",

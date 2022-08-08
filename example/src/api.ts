@@ -3,6 +3,89 @@ import { MerkleTree } from 'merkletreejs'
 
 const baseUrl = 'http://localhost:8080'
 
+const createTree = async (
+  unhashedLeaves: string[],
+  leafTypeDescriptor?: string[],
+  packedEncoding?: boolean,
+): Promise<{ merkleRoot: string }> => {
+  const encodedTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept-Encoding': 'gzip',
+    },
+    body: JSON.stringify({
+      unhashedLeaves,
+      leafTypeDescriptor,
+      packedEncoding,
+    }),
+  })
+
+  const encodedTree: { merkleRoot: string } = await encodedTreeRes.json()
+  return encodedTree
+}
+
+const getTree = async (
+  merkleRoot: string,
+): Promise<{ unhashedLeaves: string[]; leafCount: number }> => {
+  const getTreeRes = await fetch(`${baseUrl}/api/v1/tree?root=${merkleRoot}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept-Encoding': 'gzip',
+    },
+  })
+
+  const tree: {
+    unhashedLeaves: string[]
+    leafCount: number
+  } = await getTreeRes.json()
+  return tree
+}
+
+const getProofForUnhashedLeaf = async (
+  merkleRoot: string,
+  unhashedLeaf: string,
+): Promise<{ proof: string[] }> => {
+  const proofRes = await fetch(
+    `${baseUrl}/api/v1/proof?root=${merkleRoot}&unhashedLeaf=${unhashedLeaf}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip',
+      },
+    },
+  )
+
+  const proof: {
+    proof: string[]
+  } = await proofRes.json()
+  return proof
+}
+
+/** Using this endpoint is discouraged. When possible, pass `unhashedLeaf` instead */
+const getProofForAddress = async (
+  merkleRoot: string,
+  address: string,
+): Promise<{ proof: string[] }> => {
+  const proofRes = await fetch(
+    `${baseUrl}/api/v1/proof?root=${merkleRoot}&address=${address}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip',
+      },
+    },
+  )
+
+  const proof: {
+    proof: string[]
+  } = await proofRes.json()
+  return proof
+}
+
 const encode = utils.defaultAbiCoder.encode.bind(utils.defaultAbiCoder)
 const encodePacked = utils.solidityPack
 
@@ -10,6 +93,8 @@ const makeMerkleTree = (leafData: string[]) =>
   new MerkleTree(leafData.map(utils.keccak256), utils.keccak256, {
     sortPairs: true,
   })
+
+// health check
 
 const healthRes = await fetch(`${baseUrl}/health`, {
   method: 'GET',
@@ -22,6 +107,8 @@ const healthRes = await fetch(`${baseUrl}/health`, {
 const version = await healthRes.text()
 console.log('api version', version)
 
+// basic merkle tree
+
 const unhashedLeaves = [
   '0x0000000000000000000000000000000000000001',
   '0x0000000000000000000000000000000000000002',
@@ -30,59 +117,20 @@ const unhashedLeaves = [
   '0x0000000000000000000000000000000000000005',
 ]
 
-// create a merkle tree
+const { merkleRoot: basicMerkleRoot } = await createTree(unhashedLeaves)
 
-const createTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept-Encoding': 'gzip',
-  },
-  body: JSON.stringify({ unhashedLeaves }),
-})
-
-const createdTree: { merkleRoot: string } = await createTreeRes.json()
-console.log('merkle root', createdTree.merkleRoot)
+console.log('merkle root', basicMerkleRoot)
 console.log('local merkle root', makeMerkleTree(unhashedLeaves).getHexRoot())
 
-// get a tree from a root
+const { leafCount: basicLeafCount } = await getTree(basicMerkleRoot)
+console.log('leaf count', basicLeafCount)
 
-const getTreeRes = await fetch(
-  `${baseUrl}/api/v1/tree?root=${createdTree.merkleRoot}`,
-  {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept-Encoding': 'gzip',
-    },
-  },
+const { proof: basicProof } = await getProofForUnhashedLeaf(
+  basicMerkleRoot,
+  unhashedLeaves[0],
 )
 
-const tree: {
-  unhashedLeaves: string[]
-  leafCount: number
-} = await getTreeRes.json()
-
-console.log('leaf count', tree.leafCount)
-
-// get proof for a leaf
-
-const proofRes = await fetch(
-  `${baseUrl}/api/v1/proof?root=${createdTree.merkleRoot}&unhashedLeaf=${unhashedLeaves[0]}`,
-  {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept-Encoding': 'gzip',
-    },
-  },
-)
-
-const proof: {
-  proof: string[]
-} = await proofRes.json()
-
-console.log('proof', proof.proof)
+console.log('proof', basicProof)
 console.log(
   'local proof',
   makeMerkleTree(unhashedLeaves).getHexProof(
@@ -101,57 +149,70 @@ for (let i = 1; i <= 5; i++) {
   leafData.push([num2Addr(i), 2, utils.parseEther('0.01').toString()])
 }
 
-const encodedTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept-Encoding': 'gzip',
-  },
-  body: JSON.stringify({
-    unhashedLeaves: leafData.map((leafData) =>
-      encode(['address', 'uint256', 'uint256'], leafData),
-    ),
-    leafTypeDescriptor: ['address', 'uint256', 'uint256'],
-    packedEncoding: false,
-  }),
-})
+// encoded data
 
-const encodedTree: { merkleRoot: string } = await encodedTreeRes.json()
+const encodedLeafData = leafData.map((leafData) =>
+  encode(['address', 'uint256', 'uint256'], leafData),
+)
 
-console.log('encoded tree', encodedTree.merkleRoot)
+const { merkleRoot: encodedMerkleRoot } = await createTree(
+  encodedLeafData,
+  ['address', 'uint256', 'uint256'],
+  false,
+)
+
+console.log('encoded tree', encodedMerkleRoot)
 console.log(
   'local encoded merkle root',
-  makeMerkleTree(
-    leafData.map((leafData) =>
-      encode(['address', 'uint256', 'uint256'], leafData),
-    ),
-  ).getHexRoot(),
+  makeMerkleTree(encodedLeafData).getHexRoot(),
 )
 
-const encodedPackedTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept-Encoding': 'gzip',
-  },
-  body: JSON.stringify({
-    unhashedLeaves: leafData.map((leafData) =>
-      encodePacked(['address', 'uint256', 'uint256'], leafData),
-    ),
-    leafTypeDescriptor: ['address', 'uint256', 'uint256'],
-    packedEncoding: true,
-  }),
-})
+const { proof: encodedProof } = await getProofForUnhashedLeaf(
+  encodedMerkleRoot,
+  encodedLeafData[0],
+)
 
-const encodedPackedTree: { merkleRoot: string } =
-  await encodedPackedTreeRes.json()
+console.log('encoded proof', encodedProof)
+console.log(
+  'local encoded proof',
+  makeMerkleTree(encodedLeafData).getHexProof(
+    utils.keccak256(encodedLeafData[0]),
+  ),
+)
 
-console.log('encoded packed tree', encodedPackedTree.merkleRoot)
+// packed data
+
+const encodedPackedLeafData = leafData.map((leafData) =>
+  encodePacked(['address', 'uint256', 'uint256'], leafData),
+)
+
+const { merkleRoot: encodedPackedMerkleRoot } = await createTree(
+  encodedPackedLeafData,
+  ['address', 'uint256', 'uint256'],
+  true,
+)
+
+console.log('encoded packed tree', encodedPackedMerkleRoot)
 console.log(
   'local encoded packed merkle root',
-  makeMerkleTree(
-    leafData.map((leafData) =>
-      encodePacked(['address', 'uint256', 'uint256'], leafData),
-    ),
-  ).getHexRoot(),
+  makeMerkleTree(encodedPackedLeafData).getHexRoot(),
 )
+
+const { proof: encodedPackedProof } = await getProofForUnhashedLeaf(
+  encodedPackedMerkleRoot,
+  encodedPackedLeafData[0],
+)
+
+console.log('encoded packed proof', encodedPackedProof)
+console.log(
+  'local encoded packed proof',
+  makeMerkleTree(encodedPackedLeafData).getHexProof(
+    utils.keccak256(encodedPackedLeafData[0]),
+  ),
+)
+
+const { proof: encodedPackedProofByAddress } = await getProofForAddress(
+  encodedPackedMerkleRoot,
+  num2Addr(1),
+)
+console.log('encoded packed proof by address', encodedPackedProofByAddress)

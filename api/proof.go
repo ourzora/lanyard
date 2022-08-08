@@ -17,22 +17,45 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	var (
 		root = r.URL.Query().Get("root")
 		leaf = r.URL.Query().Get("unhashedLeaf")
+		addr = r.URL.Query().Get("address")
 	)
 	if root == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
-	if leaf == "" {
+	if leaf == "" && addr == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing leaf")
 		return
 	}
-	proof, err := s.dbq.SelectProof(r.Context(), queries.SelectProofParams{
-		Root:         common.FromHex(root),
-		UnhashedLeaf: common.FromHex(leaf),
-	})
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "failed to retrieve proof")
-		return
+
+	var (
+		proof [][]byte
+		err   error
+	)
+
+	if leaf != "" {
+		proof, err = s.dbq.SelectProofByUnhashedLeaf(r.Context(), queries.SelectProofByUnhashedLeafParams{
+			Root:         common.FromHex(root),
+			UnhashedLeaf: common.FromHex(leaf),
+		})
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			s.sendJSONError(r, w, err, http.StatusInternalServerError, "failed to retrieve proof")
+			return
+		}
+	} else {
+		rows, err := s.dbq.SelectProofByAddress(r.Context(), queries.SelectProofByAddressParams{
+			Root:    common.FromHex(root),
+			Address: common.HexToAddress(addr).Bytes(),
+		})
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			s.sendJSONError(r, w, err, http.StatusInternalServerError, "failed to retrieve proof")
+			return
+		}
+
+		// since this isn't guaranteed to be unique, we take the first proof available
+		if len(rows) > 0 {
+			proof = rows[0]
+		}
 	}
 
 	resp := &getProofResp{

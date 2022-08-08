@@ -69,20 +69,52 @@ func (q *Queries) SelectLeaves(ctx context.Context, root []byte) ([][]byte, erro
 	return unhashed_leaves, err
 }
 
-const selectProof = `-- name: SelectProof :one
+const selectProofByAddress = `-- name: SelectProofByAddress :many
+select proof
+from merkle_proofs
+where root = $1
+and address = $2
+`
+
+type SelectProofByAddressParams struct {
+	Root    []byte `json:"root"`
+	Address []byte `json:"address"`
+}
+
+func (q *Queries) SelectProofByAddress(ctx context.Context, arg SelectProofByAddressParams) ([][][]byte, error) {
+	rows, err := q.db.Query(ctx, selectProofByAddress, arg.Root, arg.Address)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items [][][]byte
+	for rows.Next() {
+		var proof [][]byte
+		if err := rows.Scan(&proof); err != nil {
+			return nil, err
+		}
+		items = append(items, proof)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectProofByUnhashedLeaf = `-- name: SelectProofByUnhashedLeaf :one
 select proof
 from merkle_proofs
 where root = $1
 and unhashed_leaf = $2
 `
 
-type SelectProofParams struct {
+type SelectProofByUnhashedLeafParams struct {
 	Root         []byte `json:"root"`
 	UnhashedLeaf []byte `json:"unhashedLeaf"`
 }
 
-func (q *Queries) SelectProof(ctx context.Context, arg SelectProofParams) ([][]byte, error) {
-	row := q.db.QueryRow(ctx, selectProof, arg.Root, arg.UnhashedLeaf)
+func (q *Queries) SelectProofByUnhashedLeaf(ctx context.Context, arg SelectProofByUnhashedLeafParams) ([][]byte, error) {
+	row := q.db.QueryRow(ctx, selectProofByUnhashedLeaf, arg.Root, arg.UnhashedLeaf)
 	var proof [][]byte
 	err := row.Scan(&proof)
 	return proof, err

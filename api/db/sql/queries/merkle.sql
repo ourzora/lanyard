@@ -13,8 +13,14 @@ insert into merkle_proofs (root, unhashed_leaf, address, proof)
 values ($1, $2, $3, $4)
 on conflict (root, unhashed_leaf) do nothing;
 
--- name: SelectProof :one
+-- name: SelectProofByUnhashedLeaf :one
 select proof
 from merkle_proofs
 where root = $1
 and unhashed_leaf = $2;
+
+-- name: SelectProofByAddress :many
+select proof
+from merkle_proofs
+where root = $1
+and address = $2;
