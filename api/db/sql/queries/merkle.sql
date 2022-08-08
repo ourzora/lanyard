@@ -3,8 +3,8 @@ insert into merkle_trees (root, unhashed_leaves, ltd, packed)
 values ($1, $2, $3, $4)
 on conflict (root) do nothing;
 
--- name: SelectLeaves :one
-select unhashed_leaves
+-- name: SelectTree :one
+select unhashed_leaves, ltd, packed
 from merkle_trees
 where root = $1;
 
