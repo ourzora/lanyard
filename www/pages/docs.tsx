@@ -31,7 +31,11 @@ GET /api/v1/tree?root={root}
     "0x0000000000000000000000000000000000000001",
     "0x0000000000000000000000000000000000000002"
   ],
-  "leafCount": 400
+  "leafCount": 2,
+
+  // in general you can ignore the two following fields
+  "leafTypeDescriptor": null, // or an array of solidity types
+  "packedEncoding": null // or a boolean value
 }
 `.trim()
 
