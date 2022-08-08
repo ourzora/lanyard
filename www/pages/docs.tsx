@@ -9,20 +9,21 @@ POST /api/v1/tree
     "0x0000000000000000000000000000000000000001",
     "0x0000000000000000000000000000000000000002"
   ],
-  // abiSig defaults to \`address\`, but you can pass something else
-  // if you have different data requirements
-  "abiSig": "address,uint256,uint256"
+
+  // in general you can omit the two following fields, but if you have specific data
+  // requirements you can include them to help with indexing
+  "leafTypeDescriptor": ["address"], // defaults to \`["address"]\`, can pass other solidity types
+  "packedEncoding": true // defaults to \`true\`
 }
 
 // Response body
 {
-  "merkleRoot": "0x000000000000000000000000000000000000000000000000000000000000000f",
-  "abiSig": "address,uint256,uint256"
+  "merkleRoot": "0x000000000000000000000000000000000000000000000000000000000000000f"
 }
 `.trim()
 
 const lookupCode = `
-GET /api/v1/tree?root={root}&cursor={cursor}
+GET /api/v1/tree?root={root}
 
 // Response body
 {
@@ -30,9 +31,7 @@ GET /api/v1/tree?root={root}&cursor={cursor}
     "0x0000000000000000000000000000000000000001",
     "0x0000000000000000000000000000000000000002"
   ],
-  "cursor": "2", // or null if there are no more results
-  "totalLeafCount": 400,
-  "abiSig": "address" // defaults to address
+  "leafCount": 400
 }
 `.trim()
 

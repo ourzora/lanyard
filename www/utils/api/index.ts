@@ -41,7 +41,7 @@ export function useAPIResponse<T>(
 export async function createMerkleRoot(
   addresses: string[],
 ): Promise<CreateMerkleResponse | ErrorResponse> {
-  const res = await client('POST', 'v1/merkle', {
+  const res = await client('POST', 'v1/tree', {
     unhashedLeaves: addresses,
   })
 

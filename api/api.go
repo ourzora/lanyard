@@ -33,7 +33,7 @@ func (s *Server) Handler(env, gitSha string) http.Handler {
 	mux.HandleFunc("/api/v1/tree", s.TreeHandler)
 	mux.HandleFunc("/api/v1/proof", s.GetProof)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, gitSha)
+		fmt.Fprint(w, gitSha)
 	})
 
 	h := http.Handler(mux)
