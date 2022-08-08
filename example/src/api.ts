@@ -21,13 +21,17 @@ const createTree = async (
     }),
   })
 
-  const encodedTree: { merkleRoot: string } = await encodedTreeRes.json()
-  return encodedTree
+  return await encodedTreeRes.json()
 }
 
 const getTree = async (
   merkleRoot: string,
-): Promise<{ unhashedLeaves: string[]; leafCount: number }> => {
+): Promise<{
+  unhashedLeaves: string[]
+  leafCount: number
+  leafTypeDescriptor: string[] | null
+  packedEncoding: boolean | null
+}> => {
   const getTreeRes = await fetch(`${baseUrl}/api/v1/tree?root=${merkleRoot}`, {
     method: 'GET',
     headers: {
@@ -36,11 +40,7 @@ const getTree = async (
     },
   })
 
-  const tree: {
-    unhashedLeaves: string[]
-    leafCount: number
-  } = await getTreeRes.json()
-  return tree
+  return await getTreeRes.json()
 }
 
 const getProofForUnhashedLeaf = async (
@@ -58,10 +58,7 @@ const getProofForUnhashedLeaf = async (
     },
   )
 
-  const proof: {
-    proof: string[]
-  } = await proofRes.json()
-  return proof
+  return await proofRes.json()
 }
 
 /** Using this endpoint is discouraged. When possible, pass `unhashedLeaf` instead */

@@ -56,19 +56,6 @@ func (q *Queries) InsertTree(ctx context.Context, arg InsertTreeParams) error {
 	return err
 }
 
-const selectLeaves = `-- name: SelectLeaves :one
-select unhashed_leaves
-from merkle_trees
-where root = $1
-`
-
-func (q *Queries) SelectLeaves(ctx context.Context, root []byte) ([][]byte, error) {
-	row := q.db.QueryRow(ctx, selectLeaves, root)
-	var unhashed_leaves [][]byte
-	err := row.Scan(&unhashed_leaves)
-	return unhashed_leaves, err
-}
-
 const selectProofByAddress = `-- name: SelectProofByAddress :many
 select proof
 from merkle_proofs
@@ -118,4 +105,23 @@ func (q *Queries) SelectProofByUnhashedLeaf(ctx context.Context, arg SelectProof
 	var proof [][]byte
 	err := row.Scan(&proof)
 	return proof, err
+}
+
+const selectTree = `-- name: SelectTree :one
+select unhashed_leaves, ltd, packed
+from merkle_trees
+where root = $1
+`
+
+type SelectTreeRow struct {
+	UnhashedLeaves [][]byte     `json:"unhashedLeaves"`
+	Ltd            []string     `json:"ltd"`
+	Packed         sql.NullBool `json:"packed"`
+}
+
+func (q *Queries) SelectTree(ctx context.Context, root []byte) (SelectTreeRow, error) {
+	row := q.db.QueryRow(ctx, selectTree, root)
+	var i SelectTreeRow
+	err := row.Scan(&i.UnhashedLeaves, &i.Ltd, &i.Packed)
+	return i, err
 }
