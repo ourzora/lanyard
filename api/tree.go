@@ -121,12 +121,21 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tx, err := s.db.Begin(r.Context())
+	defer tx.Rollback(r.Context())
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to start transaction")
+		return
+	}
+
+	q := s.dbq.WithTx(tx)
+
 	var leaves [][]byte
 	for i := range req.Leaves {
 		leaves = append(leaves, req.Leaves[i])
 	}
 	tree := merkle.New(leaves, merkle.SortPairs)
-	err := s.dbq.InsertTree(r.Context(), queries.InsertTreeParams{
+	err = q.InsertTree(r.Context(), queries.InsertTreeParams{
 		Root:           tree.Root(),
 		UnhashedLeaves: leaves,
 		Ltd:            req.Ltd,
@@ -143,7 +152,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Must provide addresses that result in a proof")
 			return
 		}
-		err := s.dbq.InsertProof(r.Context(), queries.InsertProofParams{
+		err := q.InsertProof(r.Context(), queries.InsertProofParams{
 			Root:         tree.Root(),
 			UnhashedLeaf: leaf,
 			Address:      leaf2AddrBytes(leaf, req.Ltd, req.Packed.Bool),
@@ -153,6 +162,12 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 			s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to persist merkle proofs")
 			return
 		}
+	}
+
+	err = tx.Commit(r.Context())
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to persist")
+		return
 	}
 
 	s.sendJSON(r, w, createTreeResp{
