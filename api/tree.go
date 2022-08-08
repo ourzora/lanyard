@@ -30,9 +30,9 @@ func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func leaf2Addr(leaf []byte, ltd []string, packed bool) common.Address {
+func leaf2AddrBytes(leaf []byte, ltd []string, packed bool) []byte {
 	if len(ltd) == 0 || (len(ltd) == 1 && ltd[0] == "address") {
-		return common.BytesToAddress(leaf)
+		return common.BytesToAddress(leaf).Bytes()
 	}
 
 	if packed {
@@ -41,7 +41,7 @@ func leaf2Addr(leaf []byte, ltd []string, packed bool) common.Address {
 	return addrUnpacked(leaf, ltd)
 }
 
-func addrUnpacked(leaf []byte, ltd []string) common.Address {
+func addrUnpacked(leaf []byte, ltd []string) []byte {
 	var addrStart, pos int
 	for _, desc := range ltd {
 		switch desc {
@@ -53,17 +53,17 @@ func addrUnpacked(leaf []byte, ltd []string) common.Address {
 		}
 	}
 	if len(leaf) >= addrStart+32 {
-		return common.BytesToAddress(leaf[addrStart:(addrStart + 32)])
+		return common.BytesToAddress(leaf[addrStart:(addrStart + 32)]).Bytes()
 	}
-	return common.Address{}
+	return nil
 }
 
-func addrPacked(leaf []byte, ltd []string) common.Address {
+func addrPacked(leaf []byte, ltd []string) []byte {
 	var addrStart, pos int
 	for _, desc := range ltd {
 		t, err := abi.NewType(desc, "", nil)
 		if err != nil {
-			return common.Address{}
+			return nil
 		}
 		switch desc {
 		case "address":
@@ -74,12 +74,12 @@ func addrPacked(leaf []byte, ltd []string) common.Address {
 		}
 	}
 	if addrStart == 0 && pos != 0 {
-		return common.Address{}
+		return nil
 	}
 	if len(leaf) >= addrStart+20 {
-		return common.BytesToAddress(leaf[addrStart:(addrStart + 20)])
+		return common.BytesToAddress(leaf[addrStart:(addrStart + 20)]).Bytes()
 	}
-	return common.Address{}
+	return nil
 }
 
 type jsonNullBool struct {
@@ -148,7 +148,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		err := s.dbq.InsertProof(r.Context(), queries.InsertProofParams{
 			Root:         tree.Root(),
 			UnhashedLeaf: leaf,
-			Address:      leaf2Addr(leaf, req.Ltd, req.Packed.Bool).Bytes(),
+			Address:      leaf2AddrBytes(leaf, req.Ltd, req.Packed.Bool),
 			Proof:        proof,
 		})
 		if err != nil {
@@ -161,8 +161,6 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		MerkleRoot: fmt.Sprintf("0x%s", hex.EncodeToString(tree.Root())),
 	})
 }
-
-const maxAddressesPerPage = 10000
 
 type getTreeResp struct {
 	UnhashedLeaves []hexutil.Bytes `json:"unhashedLeaves"`
