@@ -64,6 +64,28 @@ const getProofForUnhashedLeaf = async (
   return proof
 }
 
+/** Using this endpoint is discouraged. When possible, pass `unhashedLeaf` instead */
+const getProofForAddress = async (
+  merkleRoot: string,
+  address: string,
+): Promise<{ proof: string[] }> => {
+  const proofRes = await fetch(
+    `${baseUrl}/api/v1/proof?root=${merkleRoot}&address=${address}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip',
+      },
+    },
+  )
+
+  const proof: {
+    proof: string[]
+  } = await proofRes.json()
+  return proof
+}
+
 const encode = utils.defaultAbiCoder.encode.bind(utils.defaultAbiCoder)
 const encodePacked = utils.solidityPack
 
@@ -188,3 +210,9 @@ console.log(
     utils.keccak256(encodedPackedLeafData[0]),
   ),
 )
+
+const { proof: encodedPackedProofByAddress } = await getProofForAddress(
+  encodedPackedMerkleRoot,
+  num2Addr(1),
+)
+console.log('encoded packed proof by address', encodedPackedProofByAddress)
