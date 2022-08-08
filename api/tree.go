@@ -127,7 +127,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 	for i := range req.Leaves {
 		leaves = append(leaves, req.Leaves[i])
 	}
-	tree := merkle.New(leaves)
+	tree := merkle.New(leaves, merkle.SortPairs)
 	err := s.dbq.InsertTree(r.Context(), queries.InsertTreeParams{
 		Root:           tree.Root(),
 		UnhashedLeaves: leaves,

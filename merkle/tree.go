@@ -1,4 +1,4 @@
-//merkle tree for nft allow lists
+// merkle tree for nft allow lists
 package merkle
 
 import (
@@ -28,14 +28,14 @@ func has(opts []option, o option) bool {
 
 type Tree [][][]byte
 
-//Returns a complete Tree using items for the leaves.
-//Intermediary nodes and items will be hashed using Keccak256.
+// Returns a complete Tree using items for the leaves.
+// Intermediary nodes and items will be hashed using Keccak256.
 //
-//When SortLeaves is requested, the leaves are sorted after
-//they are hashed.
+// When SortLeaves is requested, the leaves are sorted after
+// they are hashed.
 //
-//When SortPairs is requested, the intermediary nodes are constructed
-//such that the a parent's left child is less than the parent's right child.
+// When SortPairs is requested, the intermediary nodes are constructed
+// such that the a parent's left child is less than the parent's right child.
 func New(items [][]byte, opts ...option) Tree {
 	var leaves [][]byte
 	for i := range items {
@@ -76,9 +76,9 @@ func hashPairSort(a, b []byte) []byte {
 	return crypto.Keccak256(append(b, a...))
 }
 
-//Iterates through the level pairwise merging each
-//pair with a hash function creating a new level that
-//is half the size of the level.
+// Iterates through the level pairwise merging each
+// pair with a hash function creating a new level that
+// is half the size of the level.
 func hashMerge(level [][]byte, f hashPair) [][]byte {
 	var newLevel [][]byte
 	for i := 0; i < len(level); i += 2 {
@@ -103,8 +103,8 @@ func (t Tree) Root() []byte {
 	return t[len(t)-1][0]
 }
 
-//Produces a list of hashes that represent the path
-//from the target's sibling to the root node.
+// Produces a list of hashes that represent the path
+// from the target's sibling to the root node.
 func (t Tree) Proof(target []byte) [][]byte {
 	var (
 		proof [][]byte
@@ -136,5 +136,5 @@ func Valid(root []byte, proof [][]byte, target []byte) bool {
 	for i := range proof {
 		target = hashPairSort(target, proof[i])
 	}
-	return bytes.Compare(target, root) == 0
+	return bytes.Equal(target, root)
 }
