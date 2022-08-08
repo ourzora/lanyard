@@ -1,9 +1,15 @@
 import { utils } from 'ethers'
+import { MerkleTree } from 'merkletreejs'
 
 const baseUrl = 'http://localhost:8080'
 
 const encode = utils.defaultAbiCoder.encode.bind(utils.defaultAbiCoder)
 const encodePacked = utils.solidityPack
+
+const makeMerkleTree = (leafData: string[]) =>
+  new MerkleTree(leafData.map(utils.keccak256), utils.keccak256, {
+    sortPairs: true,
+  })
 
 const healthRes = await fetch(`${baseUrl}/health`, {
   method: 'GET',
@@ -37,6 +43,7 @@ const createTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
 
 const createdTree: { merkleRoot: string } = await createTreeRes.json()
 console.log('merkle root', createdTree.merkleRoot)
+console.log('local merkle root', makeMerkleTree(unhashedLeaves).getHexRoot())
 
 // get a tree from a root
 
@@ -76,6 +83,12 @@ const proof: {
 } = await proofRes.json()
 
 console.log('proof', proof.proof)
+console.log(
+  'local proof',
+  makeMerkleTree(unhashedLeaves).getHexProof(
+    utils.keccak256(unhashedLeaves[0]),
+  ),
+)
 
 // non-address leaf data
 
@@ -84,7 +97,7 @@ const num2Addr = (num: number) =>
 
 const leafData = []
 
-for (let i = 1; i <= 3; i++) {
+for (let i = 1; i <= 5; i++) {
   leafData.push([num2Addr(i), 2, utils.parseEther('0.01').toString()])
 }
 
@@ -106,6 +119,14 @@ const encodedTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
 const encodedTree: { merkleRoot: string } = await encodedTreeRes.json()
 
 console.log('encoded tree', encodedTree.merkleRoot)
+console.log(
+  'local encoded merkle root',
+  makeMerkleTree(
+    leafData.map((leafData) =>
+      encode(['address', 'uint256', 'uint256'], leafData),
+    ),
+  ).getHexRoot(),
+)
 
 const encodedPackedTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
   method: 'POST',
@@ -126,3 +147,11 @@ const encodedPackedTree: { merkleRoot: string } =
   await encodedPackedTreeRes.json()
 
 console.log('encoded packed tree', encodedPackedTree.merkleRoot)
+console.log(
+  'local encoded packed merkle root',
+  makeMerkleTree(
+    leafData.map((leafData) =>
+      encodePacked(['address', 'uint256', 'uint256'], leafData),
+    ),
+  ).getHexRoot(),
+)

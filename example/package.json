@@ -1,7 +1,6 @@
 {
-  "name": "tests",
-  "version": "0.0.3",
-  "module": "src/index.js",
+  "name": "example",
+  "version": "0.1.0",
   "devDependencies": {
     "bun-types": "latest",
     "prettier": "^2.7.1"
