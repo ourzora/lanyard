@@ -44,13 +44,12 @@ func leaf2AddrBytes(leaf []byte, ltd []string, packed bool) []byte {
 func addrUnpacked(leaf []byte, ltd []string) []byte {
 	var addrStart, pos int
 	for _, desc := range ltd {
-		switch desc {
-		case "address":
+		if desc == "address" {
 			addrStart = pos
 			break
-		default:
-			pos += 32
 		}
+
+		pos += 32
 	}
 	if len(leaf) >= addrStart+32 {
 		return common.BytesToAddress(leaf[addrStart:(addrStart + 32)]).Bytes()
@@ -65,13 +64,12 @@ func addrPacked(leaf []byte, ltd []string) []byte {
 		if err != nil {
 			return nil
 		}
-		switch desc {
-		case "address":
+		if desc == "address" {
 			addrStart = pos
 			break
-		default:
-			pos += int(t.GetType().Size())
 		}
+
+		pos += int(t.GetType().Size())
 	}
 	if addrStart == 0 && pos != 0 {
 		return nil
