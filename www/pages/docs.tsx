@@ -47,7 +47,8 @@ GET /api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
   "proof": [ // or empty if the unhashed leaf is not in the merkle tree
     "0x0000000000000000000000000000000000000001",
     "0x0000000000000000000000000000000000000002"
-  ]
+  ],
+  "unhashedLeaf": "0x0000000000000000000000000000000000000003" // or null if not in the tree
 }
 `.trim()
 
