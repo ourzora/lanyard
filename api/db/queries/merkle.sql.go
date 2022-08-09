@@ -57,7 +57,7 @@ func (q *Queries) InsertTree(ctx context.Context, arg InsertTreeParams) error {
 }
 
 const selectProofByAddress = `-- name: SelectProofByAddress :many
-select proof
+select proof, unhashed_leaf
 from merkle_proofs
 where root = $1
 and address = $2
@@ -68,19 +68,24 @@ type SelectProofByAddressParams struct {
 	Address []byte `json:"address"`
 }
 
-func (q *Queries) SelectProofByAddress(ctx context.Context, arg SelectProofByAddressParams) ([][][]byte, error) {
+type SelectProofByAddressRow struct {
+	Proof        [][]byte `json:"proof"`
+	UnhashedLeaf []byte   `json:"unhashedLeaf"`
+}
+
+func (q *Queries) SelectProofByAddress(ctx context.Context, arg SelectProofByAddressParams) ([]SelectProofByAddressRow, error) {
 	rows, err := q.db.Query(ctx, selectProofByAddress, arg.Root, arg.Address)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items [][][]byte
+	var items []SelectProofByAddressRow
 	for rows.Next() {
-		var proof [][]byte
-		if err := rows.Scan(&proof); err != nil {
+		var i SelectProofByAddressRow
+		if err := rows.Scan(&i.Proof, &i.UnhashedLeaf); err != nil {
 			return nil, err
 		}
-		items = append(items, proof)
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

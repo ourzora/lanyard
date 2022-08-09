@@ -20,7 +20,7 @@ where root = $1
 and unhashed_leaf = $2;
 
 -- name: SelectProofByAddress :many
-select proof
+select proof, unhashed_leaf
 from merkle_proofs
 where root = $1
 and address = $2;

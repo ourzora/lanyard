@@ -46,7 +46,7 @@ const getTree = async (
 const getProofForUnhashedLeaf = async (
   merkleRoot: string,
   unhashedLeaf: string,
-): Promise<{ proof: string[] }> => {
+): Promise<{ proof: string[]; unhashedLeaf: string | null }> => {
   const proofRes = await fetch(
     `${baseUrl}/api/v1/proof?root=${merkleRoot}&unhashedLeaf=${unhashedLeaf}`,
     {
@@ -65,7 +65,7 @@ const getProofForUnhashedLeaf = async (
 const getProofForIndexedAddress = async (
   merkleRoot: string,
   address: string,
-): Promise<{ proof: string[] }> => {
+): Promise<{ proof: string[]; unhashedLeaf: string | null }> => {
   const proofRes = await fetch(
     `${baseUrl}/api/v1/proof?root=${merkleRoot}&address=${address}`,
     {
@@ -77,10 +77,7 @@ const getProofForIndexedAddress = async (
     },
   )
 
-  const proof: {
-    proof: string[]
-  } = await proofRes.json()
-  return proof
+  return await proofRes.json()
 }
 
 const encode = utils.defaultAbiCoder.encode.bind(utils.defaultAbiCoder)

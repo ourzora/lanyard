@@ -6,11 +6,13 @@ import (
 
 	"github.com/contextart/al/api/db/queries"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jackc/pgx/v4"
 )
 
 type getProofResp struct {
-	Proof []string `json:"proof"`
+	UnhashedLeaf *string  `json:"unhashedLeaf"`
+	Proof        []string `json:"proof"`
 }
 
 func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
@@ -29,11 +31,13 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		proof [][]byte
-		err   error
+		unhashedLeaf *string
+		proof        [][]byte
+		err          error
 	)
 
 	if leaf != "" {
+		unhashedLeaf = &leaf
 		proof, err = s.dbq.SelectProofByUnhashedLeaf(r.Context(), queries.SelectProofByUnhashedLeafParams{
 			Root:         common.FromHex(root),
 			UnhashedLeaf: common.FromHex(leaf),
@@ -54,12 +58,15 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 
 		// since this isn't guaranteed to be unique, we take the first proof available
 		if len(rows) > 0 {
-			proof = rows[0]
+			ul := hexutil.Encode(rows[0].UnhashedLeaf)
+			unhashedLeaf = &ul
+			proof = rows[0].Proof
 		}
 	}
 
 	resp := &getProofResp{
-		Proof: make([]string, 0, len(proof)),
+		Proof:        make([]string, 0, len(proof)),
+		UnhashedLeaf: unhashedLeaf,
 	}
 	for i := range proof {
 		resp.Proof = append(resp.Proof, common.BytesToHash(proof[i]).String())
