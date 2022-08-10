@@ -1,16 +1,33 @@
 import classNames from 'classnames'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { twitterUrl, githubUrl } from 'utils/constants'
 
 export default function SiteNav() {
   return (
-    <div className="flex mt-4 mb-4 flex-col gap-y-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between my-8 gap-4">
       <Link href="/">
-        <a className="font-bold text-3xl">allowlist</a>
+        <a className="font-bold text-3xl">Lanyard</a>
       </Link>
-      <div className="flex gap-x-4">
-        <NavTab href="/" title="Creators" />
-        <NavTab href="/docs" title="API Documentation" />{' '}
+      <div className="flex gap-x-6">
+        <NavTab href="/" title="Create" />
+        <NavTab href="/docs" title="API" />
+        <a
+          href={twitterUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-md"
+        >
+          Twitter
+        </a>
+        <a
+          href={githubUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-md"
+        >
+          Github
+        </a>
       </div>
     </div>
   )
@@ -21,7 +38,14 @@ const NavTab = ({ href, title }: { href: string; title: string }) => {
   const isActive = asPath === href
   return (
     <Link href={href}>
-      <a className={classNames(isActive && 'font-semibold')}>{title}</a>
+      <a
+        className={classNames(
+          'text-md',
+          isActive && 'font-bold border-b-4 border-[#6DFA8C]',
+        )}
+      >
+        {title}
+      </a>
     </Link>
   )
 }

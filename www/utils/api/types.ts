@@ -13,3 +13,10 @@ export type CreateMerkleResponse = {
   merkleRoot: string
   abiSig: string
 }
+
+export type TreeResponse = {
+  unhashedLeaves: string[]
+  leafCount: number
+  leafTypeDescriptor: string | null
+  packedEncoding: boolean | null
+}

@@ -9,7 +9,7 @@ interface Props {
 }
 
 function MetaTags({ title, description, imageUrl, largeImage = true }: Props) {
-  const renderedTitle = `allowlist${title !== undefined ? ` | ${title}` : ''}`
+  const renderedTitle = `Lanyard${title !== undefined ? ` | ${title}` : ''}`
   return (
     <Head>
       <title>{renderedTitle}</title>

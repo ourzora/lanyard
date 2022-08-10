@@ -20,11 +20,9 @@ function Tutorial({ addresses }: Props) {
 
   return (
     <div className={classNames('flex flex-col gap-y-4', 'w-full')}>
-      <h1 className="font-bold text-3xl">
-        Adding a Merkle proof to your project
-      </h1>
+      <h1 className="font-bold text-3xl">How to use your Merkle root</h1>
 
-      <Heading>Install dependencies</Heading>
+      <Heading>1. Install dependencies</Heading>
       <p>
         Install the following libraries to generate the proof for a wallet on
         your site.
@@ -35,7 +33,7 @@ function Tutorial({ addresses }: Props) {
         language="txt"
       />
 
-      <Heading>Add Merkle tree code</Heading>
+      <Heading>2. Add Merkle tree code</Heading>
       <p>
         Use the following code, replacing the addresses with the addresses
         pasted here, to have the code ready to generate your Merkle proofs.
@@ -47,7 +45,7 @@ function Tutorial({ addresses }: Props) {
         language="typescript"
       />
 
-      <Heading>Pass Merkle proof to your contract</Heading>
+      <Heading>3. Pass Merkle proof to your contract</Heading>
       <p>
         Using the file above, import the `getMerkleProof` function to generate a
         proof for a connected wallet.
@@ -58,7 +56,7 @@ function Tutorial({ addresses }: Props) {
         language="tsx"
       />
 
-      <Heading>Check the Merkle proof in your contract</Heading>
+      <Heading>4. Check the Merkle proof in your contract</Heading>
       <p>
         When you have a Merkle root, you can check proofs using this helper from
         OpenZeppelin&apos;s contracts.
