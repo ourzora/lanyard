@@ -43,7 +43,7 @@ export function getMerkleProof(address: string) {
 export const passMerkleProofCode = `
 import { getMerkleProof } from './merkle.ts';
 
-// right before minting, get the merkle proof for the current wallet
+// right before minting, get the Merkle proof for the current wallet
 // const walletAddress = ...
 const merkleProof = getMerkleProof(walletAddress);
 
@@ -54,7 +54,7 @@ await myContract.mintAllowList(merkleProof);
 export const ourLibraryCode = `
 import { getMerkleProof } from 'merklefoolib';
 
-// Get your merkle root from the merkle.foo website and paste here
+// Get your Merkle root from the merkle.foo website and paste here
 const merkleRoot = '0x0123456789abcdef0123456789abcdef01234567';
 
 const walletAddress = '0x1000000000000000000000000000000000000000';

@@ -8,7 +8,7 @@ export default function FAQ() {
         <Question>What is Lanyard?</Question>
         <Answer>
           Lanyard is a free and open source tool for quickly and easily
-          generating a merkle root for your NFT project allow list.
+          generating a Merkle root for your NFT project allow list.
         </Answer>
       </QandA>
       <QandA>
@@ -16,7 +16,7 @@ export default function FAQ() {
           What do you mean when you say my allow list will work across web3?
         </Question>
         <Answer>
-          Lanyard securely stores your allow list and merkle root so that your
+          Lanyard securely stores your allow list and Merkle root so that your
           community can mint your project from their preferred interface – your
           website, mint.fun, and any other platform that integrates Lanyard.
         </Answer>
