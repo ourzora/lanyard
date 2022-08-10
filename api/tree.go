@@ -127,6 +127,10 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "No leaves provided")
 		return
 	}
+	if len(req.Leaves) == 1 {
+		s.sendJSONError(r, w, nil, http.StatusBadRequest, "You must provide at least two values")
+		return
+	}
 
 	tx, err := s.db.Begin(r.Context())
 	defer tx.Rollback(r.Context())
