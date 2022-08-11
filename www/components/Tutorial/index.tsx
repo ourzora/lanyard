@@ -21,7 +21,7 @@ function Tutorial({ addresses }: Props) {
   return (
     <div className="flex flex-col gap-y-8 w-full">
       <h1 className="font-bold text-2xl sm:text-3xl">
-        How to use a Merkle root in your contract
+        How to use the Merkle root in your contract
       </h1>
       <div className="flex flex-col gap-y-[6rem] w-full">
         <Section

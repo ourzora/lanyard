@@ -51,16 +51,6 @@ const merkleProof = getMerkleProof(walletAddress);
 await myContract.mintAllowList(merkleProof);
 `.trim()
 
-export const ourLibraryCode = `
-import { getMerkleProof } from 'merklefoolib';
-
-// Get your Merkle root from the merkle.foo website and paste here
-const merkleRoot = '0x0123456789abcdef0123456789abcdef01234567';
-
-const walletAddress = '0x1000000000000000000000000000000000000000';
-const proof = await getMerkleProof(merkleRoot, walletAddress);
-`.trim()
-
 export const nftMerkleProofCode = `
 import {MerkleProof} from "openzeppelin/utils/cryptography/MerkleProof.sol";
 

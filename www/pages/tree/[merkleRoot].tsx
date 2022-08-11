@@ -20,7 +20,9 @@ export default function MerkleRootPage({
   return (
     <div className="flex flex-col gap-y-[6rem]">
       <div className="flex flex-col gap-y-4">
-        <PageTitle noPadding>Here&rsquo;s your Merkle root!</PageTitle>
+        <PageTitle noPadding>
+          Here&rsquo;s the Merkle root for your allow list
+        </PageTitle>
         <div className="font-bold">
           <CodeBlock language="txt" code={merkleRoot} oneLiner />
         </div>
