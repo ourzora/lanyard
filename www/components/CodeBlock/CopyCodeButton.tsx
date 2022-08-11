@@ -28,7 +28,7 @@ function CopyCodeButton({ codeForCopy, className }: Props) {
       )}
       onClick={copyCode}
     >
-      {justCopied ? 'Copied!' : 'Copy code'}
+      {justCopied ? 'Copied!' : 'Copy'}
     </button>
   )
 }

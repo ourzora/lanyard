@@ -3,8 +3,8 @@ npm install merkletreejs ethers
 `.trim()
 
 const addressPlaceholderComments = [
-  'your addresses will be filled in here',
-  'when you click the "Copy code" button',
+  'your addresses will be filled in here automatically when',
+  'you click the "Copy" button on the top of this code block',
 ]
   .map((comment) => `  // ${comment}`)
   .join('\n')
