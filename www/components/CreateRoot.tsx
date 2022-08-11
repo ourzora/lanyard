@@ -60,8 +60,7 @@ export default function CreateRoot() {
 
   useEffect(() => {
     if (merkleRoot !== undefined) {
-      // redirect to the merkle root page
-      router.push(`/${merkleRoot}`)
+      router.push(`/tree/${merkleRoot}`)
     }
   }, [merkleRoot, router])
 
