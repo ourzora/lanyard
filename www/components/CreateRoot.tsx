@@ -64,6 +64,8 @@ export default function CreateRoot() {
     }
   }, [merkleRoot, router])
 
+  const buttonPending = status === 'loading' || merkleRoot !== undefined
+
   return (
     <div className="flex flex-col items-start gap-y-8">
       <textarea
@@ -83,7 +85,7 @@ export default function CreateRoot() {
         <Button
           onClick={handleSubmit}
           label="Generate Merkle root"
-          pending={status === 'loading'}
+          pending={buttonPending}
           disabled={parsedAddressesCount === 0}
           className="w-full max-w-[30rem] h-[66px]"
         />
