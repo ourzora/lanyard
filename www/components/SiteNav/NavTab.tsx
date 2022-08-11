@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import classNames from 'classnames'
+import { brandUnderlineClasses } from 'utils/theme'
 
 type Props = {
   href: string
@@ -17,7 +18,10 @@ function NavTab({ href, title, selectedOverride = false }: Props) {
       <a
         className={classNames(
           'text-md',
-          (isActive || selectedOverride) && 'font-bold border-b-4 border-brand',
+          (isActive || selectedOverride) && [
+            'font-bold',
+            brandUnderlineClasses,
+          ],
         )}
       >
         {title}

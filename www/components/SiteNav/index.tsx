@@ -17,7 +17,7 @@ export default function SiteNav() {
       <Link href="/">
         <a className="font-bold text-3xl">Lanyard</a>
       </Link>
-      <div className="flex gap-x-6">
+      <div className="flex gap-x-6 h-8 items-center">
         <NavTab
           href="/"
           title="Create"
