@@ -37,12 +37,17 @@ const CodeBlock = ({ title, code, codeForCopy, language }: Props) => {
         <div
           className={classNames(
             'flex justify-between items-center',
-            'bg-neutral-50 text-neutral-500 text-lg px-4 py-2',
+            'text-neutral-500 text-lg px-4 py-2',
           )}
         >
           {title}
           <button
-            className="transition-colors hover:text-neutral-800"
+            className={classNames(
+              'bg-neutral-100 hover:bg-neutral-200 border-2 border-neutral-200 rounded-md',
+              'transition-colors',
+              'px-2 py-0.5 w-24',
+              'font-bold text-black text-sm',
+            )}
             onClick={copyCode}
           >
             {justCopied ? 'Copied!' : 'Copy code'}
