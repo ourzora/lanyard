@@ -72,7 +72,7 @@ export default function CreateRoot() {
           'focus:outline-none',
           'p-4 rounded-lg',
           'font-mono',
-          'h-[250px]',
+          'h-44',
         )}
         value={addressInput}
         onChange={(e) => addressInputSet(e.target.value)}
