@@ -1,7 +1,7 @@
 import CodeBlock from 'components/CodeBlock'
 
 const createCode = `
-POST /api/v1/tree
+POST https://lanyard.build/api/v1/tree
 
 // Request body
 {
@@ -23,7 +23,7 @@ POST /api/v1/tree
 `.trim()
 
 const lookupCode = `
-GET /api/v1/tree?root={root}
+GET https://lanyard.build/api/v1/tree?root={root}
 
 // Response body
 {
@@ -40,7 +40,7 @@ GET /api/v1/tree?root={root}
 `.trim()
 
 const proofCode = `
-GET /api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
+GET https://lanyard.build/api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
 
 // Response body
 {
