@@ -1,16 +1,28 @@
-import classNames from 'classnames'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useMemo } from 'react'
 import { twitterUrl, githubUrl } from 'utils/constants'
+import NavTab from './NavTab'
 
 export default function SiteNav() {
+  const { pathname } = useRouter()
+
+  const createTabSelectedOverride = useMemo(
+    () => (pathname === '/tree/[merkleRoot]' ? true : undefined),
+    [pathname],
+  )
+
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between mt-8 mb-10 sm:mb-16 gap-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between mt-8 mb-16 sm:mb-24 lg:mb-32 gap-4">
       <Link href="/">
         <a className="font-bold text-3xl">Lanyard</a>
       </Link>
       <div className="flex gap-x-6">
-        <NavTab href="/" title="Create" />
+        <NavTab
+          href="/"
+          title="Create"
+          selectedOverride={createTabSelectedOverride}
+        />
         <NavTab href="/docs" title="API" />
         <a
           href={twitterUrl}
@@ -30,22 +42,5 @@ export default function SiteNav() {
         </a>
       </div>
     </div>
-  )
-}
-
-const NavTab = ({ href, title }: { href: string; title: string }) => {
-  const { asPath } = useRouter()
-  const isActive = asPath === href
-  return (
-    <Link href={href}>
-      <a
-        className={classNames(
-          'text-md',
-          isActive && 'font-bold border-b-4 border-brand',
-        )}
-      >
-        {title}
-      </a>
-    </Link>
   )
 }

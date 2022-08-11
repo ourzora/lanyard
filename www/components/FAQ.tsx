@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { twitterUrl } from 'utils/constants'
-
-const linkClasses = 'underline decoration-brand underline-offset-4'
+import { brandUnderlineClasses } from 'utils/theme'
 
 export default function FAQ() {
   return (
@@ -21,7 +20,7 @@ export default function FAQ() {
             href="https://en.wikipedia.org/wiki/Merkle_root"
             target="_blank"
             rel="noopener noreferrer"
-            className={linkClasses}
+            className={brandUnderlineClasses}
           >
             Merkle root
           </a>{' '}
@@ -44,7 +43,7 @@ export default function FAQ() {
             href="https://mint.fun"
             target="_blank"
             rel="noopener noreferrer"
-            className={linkClasses}
+            className={brandUnderlineClasses}
           >
             mint.fun
           </a>
@@ -56,9 +55,9 @@ export default function FAQ() {
           I’m building a minting platform – how do I integrate Lanyard?
         </Question>
         <Answer>
-          See our{' '}
+          See our API documentation{' '}
           <Link href="/docs">
-            <a className={linkClasses}>API documentation here</a>
+            <a className={brandUnderlineClasses}>here</a>
           </Link>
           .
         </Answer>
@@ -72,7 +71,7 @@ export default function FAQ() {
             href={twitterUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={linkClasses}
+            className={brandUnderlineClasses}
           >
             DM us on Twitter
           </a>{' '}
@@ -84,11 +83,11 @@ export default function FAQ() {
 }
 
 const Question = ({ children }: { children: React.ReactNode }) => (
-  <div className="font-bold text-xl">{children}</div>
+  <div className="font-bold text-2xl">{children}</div>
 )
 
 const Answer = ({ children }: { children: React.ReactNode }) => (
-  <div className="text-xl">{children}</div>
+  <div className="text-lg">{children}</div>
 )
 
 const QandA = ({ children }: { children: React.ReactNode }) => (

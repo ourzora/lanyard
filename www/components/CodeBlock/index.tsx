@@ -22,13 +22,13 @@ type Props = {
   title?: string
 }
 
-const CodeBlock = ({
+function CodeBlock({
   title,
   code,
   codeForCopy,
   oneLiner = false,
   language,
-}: Props) => {
+}: Props) {
   const codeForCopyButton = useCallback(
     () => codeForCopy?.() ?? code,
     [codeForCopy, code],

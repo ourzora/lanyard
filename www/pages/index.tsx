@@ -11,11 +11,11 @@ export default function CreatePage() {
 
       <CreateRoot />
 
-      <div className="flex gap-3 sm:gap-4 text-base mt-10 items-center">
+      <div className="flex gap-3 sm:gap-4 text-base mt-24 items-center">
         <img
           src="/collablogos.png"
           alt="partner logos"
-          className="w-[64px] sm:w-[84px]"
+          className="w-[64px] sm:w-[72px]"
         />
         <div>
           An open source project from{' '}

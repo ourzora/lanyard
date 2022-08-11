@@ -12,7 +12,7 @@ export default function Layout({ children }: Props) {
     <div className="flex flex-col items-center overflow-x-hidden">
       <MetaTags description={siteDescription} />
 
-      <div className="w-full max-w-screen-lg px-3 md:px-8 pb-8">
+      <div className="w-full max-w-screen-lg px-3 sm:px-8 pb-8">
         <SiteNav />
         <main>{children}</main>
       </div>

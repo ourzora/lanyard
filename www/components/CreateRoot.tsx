@@ -65,15 +65,15 @@ export default function CreateRoot() {
   }, [merkleRoot, router])
 
   return (
-    <div className="flex flex-col items-start gap-y-4">
+    <div className="flex flex-col items-start gap-y-8">
       <textarea
         className={classNames(
           'w-full min-h-fit border-2 border-neutral-200 resize-none',
           'focus:outline-none',
           'p-4 rounded-lg',
           'font-mono',
+          'h-[250px]',
         )}
-        style={{ minHeight: '8rem' }}
         value={addressInput}
         onChange={(e) => addressInputSet(e.target.value)}
         placeholder="Paste addresses here, separated by commas, spaces or new lines"
@@ -85,7 +85,7 @@ export default function CreateRoot() {
           label="Generate Merkle root"
           pending={status === 'loading'}
           disabled={parsedAddressesCount === 0}
-          className="w-full max-w-[20rem]"
+          className="w-full max-w-[30rem] h-[66px]"
         />
 
         {parsedAddressesCount > 0 && (

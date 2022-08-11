@@ -1,4 +1,5 @@
 import CodeBlock from 'components/CodeBlock'
+import PageTitle from 'components/PageTitle'
 import Tutorial from 'components/Tutorial'
 import {
   GetServerSideProps,
@@ -17,10 +18,12 @@ export default function MerkleRootPage({
   tree,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
-    <div className="flex flex-col gap-y-10">
+    <div className="flex flex-col gap-y-[6rem]">
       <div className="flex flex-col gap-y-4">
-        <div className="font-bold text-2xl">Here&rsquo;s your Merkle root!</div>
-        <CodeBlock language="txt" code={merkleRoot} oneLiner />
+        <PageTitle noPadding>Here&rsquo;s your Merkle root!</PageTitle>
+        <div className="font-bold">
+          <CodeBlock language="txt" code={merkleRoot} oneLiner />
+        </div>
       </div>
 
       <Tutorial addresses={tree.unhashedLeaves} />

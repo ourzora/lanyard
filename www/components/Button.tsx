@@ -23,6 +23,7 @@ function Button({
         'flex items-center justify-center',
         'bg-neutral-800 py-2 px-4 rounded-lg text-white font-semibold',
         'group group-aria aria-disabled:pointer-events-none aria-busy:pointer-events-none aria-disabled:opacity-50 aria-busy:opacity-50',
+        'text-lg',
         className,
       )}
       disabled={disabled || pending}
