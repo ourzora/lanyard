@@ -20,7 +20,7 @@ export default function MerkleRootPage({
     <div className="flex flex-col gap-y-10">
       <div className="flex flex-col gap-y-4">
         <div className="font-bold text-2xl">Here&rsquo;s your Merkle root!</div>
-        <CodeBlock language="txt" code={merkleRoot} title="Merkle root" />
+        <CodeBlock language="txt" code={merkleRoot} oneLiner />
       </div>
 
       <Tutorial addresses={tree.unhashedLeaves} />

@@ -1,12 +1,13 @@
 import CreateRoot from 'components/CreateRoot'
 import FAQ from 'components/FAQ'
+import PageTitle from 'components/PageTitle'
 
 export default function CreatePage() {
   return (
     <div className="flex flex-col mb-24">
-      <div className="font-bold text-2xl text-center my-10">
-        Create an allow list in seconds that works across web3
-      </div>
+      <PageTitle>
+        Create an allow list in seconds that works across all of web3
+      </PageTitle>
 
       <CreateRoot />
 

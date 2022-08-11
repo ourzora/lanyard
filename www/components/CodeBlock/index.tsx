@@ -1,9 +1,9 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import Highlight, { defaultProps, Language } from 'prism-react-renderer'
 import builtinTheme from 'prism-react-renderer/themes/ultramin'
 import classNames from 'classnames'
-import { copyToClipboard } from 'utils/clipboard'
 import loadSolidityLanguageHighlighting from './loadSolidityLanguageHighlighting'
+import CopyCodeButton from './CopyCodeButton'
 
 loadSolidityLanguageHighlighting()
 
@@ -18,18 +18,21 @@ type Props = {
   code: string
   codeForCopy?(): string
   language: Language | 'sol' | 'txt'
+  oneLiner?: boolean
   title?: string
 }
 
-const CodeBlock = ({ title, code, codeForCopy, language }: Props) => {
-  const [justCopied, justCopiedSet] = useState(false)
-
-  const copyCode = useCallback(() => {
-    copyToClipboard(codeForCopy?.() ?? code)
-    justCopiedSet(true)
-    const id = setTimeout(() => justCopiedSet(false), 1000)
-    return () => clearTimeout(id)
-  }, [code, codeForCopy])
+const CodeBlock = ({
+  title,
+  code,
+  codeForCopy,
+  oneLiner = false,
+  language,
+}: Props) => {
+  const codeForCopyButton = useCallback(
+    () => codeForCopy?.() ?? code,
+    [codeForCopy, code],
+  )
 
   return (
     <div className="group flex flex-col border-2 rounded-lg overflow-hidden divide-y-2">
@@ -37,44 +40,47 @@ const CodeBlock = ({ title, code, codeForCopy, language }: Props) => {
         <div
           className={classNames(
             'flex justify-between items-center',
-            'text-neutral-500 text-lg px-4 py-2',
+            'text-neutral-500 text-lg px-4 py-2 h-14',
           )}
         >
-          {title}
-          <button
-            className={classNames(
-              'bg-neutral-100 hover:bg-neutral-200 border-2 border-neutral-200 rounded-md',
-              'transition-colors',
-              'px-2 py-0.5 w-24',
-              'font-bold text-black text-sm',
-            )}
-            onClick={copyCode}
-          >
-            {justCopied ? 'Copied!' : 'Copy code'}
-          </button>
+          <span className="font-mono text-base">{title}</span>
+          <CopyCodeButton codeForCopy={codeForCopyButton} />
         </div>
       )}
-      <Highlight
-        {...defaultProps}
-        theme={theme}
-        code={code}
-        language={language as Language}
-      >
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre
-            className={classNames('p-4 overflow-x-scroll', className)}
-            style={style}
+
+      <div className="flex justify-between items-center min-h-[5rem] p-4 gap-x-4">
+        {oneLiner ? (
+          <pre className="text-ellipsis overflow-hidden">{code}</pre>
+        ) : (
+          <Highlight
+            {...defaultProps}
+            theme={theme}
+            code={code}
+            language={language as Language}
           >
-            {tokens.map((line, i) => (
-              <div key={i} {...getLineProps({ line, key: i })}>
-                {line.map((token, key) => (
-                  <span key={key} {...getTokenProps({ token, key })} />
+            {({ className, style, tokens, getLineProps, getTokenProps }) => (
+              <pre
+                className={classNames('overflow-x-scroll', className)}
+                style={style}
+              >
+                {tokens.map((line, i) => (
+                  <div key={i} {...getLineProps({ line, key: i })}>
+                    {line.map((token, key) => (
+                      <span key={key} {...getTokenProps({ token, key })} />
+                    ))}
+                  </div>
                 ))}
-              </div>
-            ))}
-          </pre>
+              </pre>
+            )}
+          </Highlight>
         )}
-      </Highlight>
+        {oneLiner && title === undefined && (
+          <CopyCodeButton
+            codeForCopy={codeForCopyButton}
+            className="flex-shrink-0"
+          />
+        )}
+      </div>
     </div>
   )
 }

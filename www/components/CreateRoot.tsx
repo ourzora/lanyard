@@ -79,20 +79,21 @@ export default function CreateRoot() {
         placeholder="Paste addresses here, separated by commas, spaces or new lines"
       />
 
-      <div className="flex flex-col-reverse sm:flex-row justify-end w-full gap-x-4 gap-y-2 items-center">
+      <div className="flex flex-col sm:flex-row w-full gap-x-4 gap-y-2 items-center">
+        <Button
+          onClick={handleSubmit}
+          label="Generate Merkle root"
+          pending={status === 'loading'}
+          disabled={parsedAddressesCount === 0}
+          className="w-full max-w-[20rem]"
+        />
+
         {parsedAddressesCount > 0 && (
           <div>
             {parsedAddressesCount} address
             {parsedAddressesCount === 1 ? '' : 'es'} found
           </div>
         )}
-
-        <Button
-          onClick={handleSubmit}
-          label="Generate Merkle root"
-          pending={status === 'loading'}
-          disabled={parsedAddressesCount === 0}
-        />
       </div>
 
       {status === 'success' && errorResponse !== undefined && (

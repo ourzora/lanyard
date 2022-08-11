@@ -5,7 +5,7 @@ import { twitterUrl, githubUrl } from 'utils/constants'
 
 export default function SiteNav() {
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between my-8 gap-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between mt-8 mb-10 sm:mb-16 gap-4">
       <Link href="/">
         <a className="font-bold text-3xl">Lanyard</a>
       </Link>
