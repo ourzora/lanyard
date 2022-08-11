@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/contextart/al/api/db/queries"
-	"github.com/contextart/al/merkle"
+	"github.com/contextwtf/lanyard/api/db/queries"
+	"github.com/contextwtf/lanyard/merkle"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

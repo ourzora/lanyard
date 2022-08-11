@@ -8,9 +8,9 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/contextart/al/api"
-	"github.com/contextart/al/api/db/migrations"
-	"github.com/contextart/al/migrate"
+	"github.com/contextwtf/lanyard/api"
+	"github.com/contextwtf/lanyard/api/db/migrations"
+	"github.com/contextwtf/lanyard/migrate"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"

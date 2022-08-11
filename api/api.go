@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/contextart/al/api/db/queries"
+	"github.com/contextwtf/lanyard/api/db/queries"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/cors"
