@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/contextart/al/api/db/queries"
+	"github.com/contextwtf/lanyard/api/db/queries"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jackc/pgx/v4"

@@ -1,4 +1,4 @@
-module github.com/contextart/al
+module github.com/contextwtf/lanyard
 
 go 1.19
 

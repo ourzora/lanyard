@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/contextart/al/api/db/migrations"
-	"github.com/contextart/al/migrate"
+	"github.com/contextwtf/lanyard/api/db/migrations"
+	"github.com/contextwtf/lanyard/migrate"
 	_ "github.com/lib/pq"
 )
 
