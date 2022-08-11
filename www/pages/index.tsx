@@ -24,7 +24,7 @@ export default function CreatePage() {
         </div>
       </div>
 
-      <div className="h-px bg-neutral-200 my-10 sm:my-16 w-full" />
+      <div className="h-px bg-neutral-200 mt-4 sm:mt-8 mb-10 sm:mb-16 w-full" />
 
       <FAQ />
     </div>
