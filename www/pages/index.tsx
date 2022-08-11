@@ -4,7 +4,7 @@ import PageTitle from 'components/PageTitle'
 
 export default function CreatePage() {
   return (
-    <div className="flex flex-col mb-24">
+    <div className="flex flex-col">
       <PageTitle>
         Create an allow list in seconds that works across all of web3
       </PageTitle>

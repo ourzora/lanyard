@@ -9,7 +9,7 @@ type Props = {
 
 export default function Layout({ children }: Props) {
   return (
-    <div className="flex flex-col items-center overflow-x-hidden">
+    <div className="flex flex-col items-center overflow-x-hidden pb-20">
       <MetaTags description={siteDescription} />
 
       <div className="w-full max-w-screen-lg px-3 sm:px-8 pb-8">
