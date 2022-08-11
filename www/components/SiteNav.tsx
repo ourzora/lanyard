@@ -41,7 +41,7 @@ const NavTab = ({ href, title }: { href: string; title: string }) => {
       <a
         className={classNames(
           'text-md',
-          isActive && 'font-bold border-b-4 border-[#6DFA8C]',
+          isActive && 'font-bold border-b-4 border-brand',
         )}
       >
         {title}

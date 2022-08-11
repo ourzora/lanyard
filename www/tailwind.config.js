@@ -15,6 +15,11 @@ module.exports = {
       xl: '1280px',
       '2xl': '1536px',
     },
+    extend: {
+      colors: {
+        brand: '#6DFA8C',
+      },
+    },
   },
   plugins: [require('tailwind-aria')],
 }

@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { twitterUrl } from 'utils/constants'
 
+const linkClasses = 'underline decoration-brand underline-offset-4'
+
 export default function FAQ() {
   return (
     <div className="flex flex-col gap-y-12">
@@ -19,7 +21,7 @@ export default function FAQ() {
             href="https://en.wikipedia.org/wiki/Merkle_root"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline"
+            className={linkClasses}
           >
             Merkle root
           </a>{' '}
@@ -37,7 +39,16 @@ export default function FAQ() {
         <Answer>
           Lanyard securely stores your allow list and Merkle root so that your
           community can mint your project from their preferred interface – your
-          website, mint.fun, and any other platform that integrates Lanyard.
+          website,{' '}
+          <a
+            href="https://mint.fun"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={linkClasses}
+          >
+            mint.fun
+          </a>
+          , and any other platform that integrates Lanyard.
         </Answer>
       </QandA>
       <QandA>
@@ -47,7 +58,7 @@ export default function FAQ() {
         <Answer>
           See our{' '}
           <Link href="/docs">
-            <a className="underline">API documentation here</a>
+            <a className={linkClasses}>API documentation here</a>
           </Link>
           .
         </Answer>
@@ -61,7 +72,7 @@ export default function FAQ() {
             href={twitterUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline"
+            className={linkClasses}
           >
             DM us on Twitter
           </a>{' '}
