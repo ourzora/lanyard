@@ -1,5 +1,6 @@
-import React, { ReactNode, useCallback } from 'react'
-import CodeBlock from '../CodeBlock'
+import React, { useCallback } from 'react'
+import CodeBlock from 'components/CodeBlock'
+import Section from './Section'
 import {
   installDependenciesCode,
   merkleSetupCode,
@@ -79,21 +80,5 @@ function Tutorial({ addresses }: Props) {
     </div>
   )
 }
-
-const Section = ({
-  title,
-  description,
-  children,
-}: {
-  title: ReactNode
-  description?: ReactNode
-  children: ReactNode
-}) => (
-  <div className="flex flex-col gap-y-4">
-    <h1 className="font-bold text-xl sm:text-2xl">{title}</h1>
-    {description !== undefined && <p>{description}</p>}
-    {children}
-  </div>
-)
 
 export default React.memo(Tutorial)
