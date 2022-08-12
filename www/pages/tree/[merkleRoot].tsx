@@ -7,6 +7,7 @@ import {
   InferGetServerSidePropsType,
 } from 'next'
 import { getMerkleTree, TreeResponse } from 'utils/api'
+import { brandUnderlineClasses } from 'utils/theme'
 
 type Props = {
   merkleRoot: string
@@ -25,6 +26,17 @@ export default function MerkleRootPage({
         </PageTitle>
         <div className="font-bold">
           <CodeBlock language="txt" code={merkleRoot} oneLiner />
+        </div>
+        <div>
+          Need help using your Merkle root?{' '}
+          <a
+            href="https://discord.gg/context"
+            target="_blank"
+            rel="noreferrer noopener"
+            className={brandUnderlineClasses}
+          >
+            Message us on Discord
+          </a>
         </div>
       </div>
 
