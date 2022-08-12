@@ -130,3 +130,14 @@ func (q *Queries) SelectTree(ctx context.Context, root []byte) (SelectTreeRow, e
 	err := row.Scan(&i.UnhashedLeaves, &i.Ltd, &i.Packed)
 	return i, err
 }
+
+const selectTreeExists = `-- name: SelectTreeExists :one
+select exists(select 1 from merkle_trees where root = $1)
+`
+
+func (q *Queries) SelectTreeExists(ctx context.Context, root []byte) (bool, error) {
+	row := q.db.QueryRow(ctx, selectTreeExists, root)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
