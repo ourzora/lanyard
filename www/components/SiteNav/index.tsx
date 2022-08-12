@@ -38,7 +38,7 @@ export default function SiteNav() {
           rel="noopener noreferrer"
           className="text-md"
         >
-          Github
+          GitHub
         </a>
       </div>
     </div>
