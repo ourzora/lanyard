@@ -5,6 +5,7 @@ import { isErrorResponse, createMerkleRoot } from 'utils/api'
 import Button from 'components/Button'
 import { parseAddressesFromText } from 'utils/addressParsing'
 import { useRouter } from 'next/router'
+import { randomBytes } from 'crypto'
 
 const useCreateMerkleRoot = () => {
   const [{ value, status }, create] = useAsync(
@@ -24,6 +25,8 @@ const useCreateMerkleRoot = () => {
 
   return { merkleRoot, error, status, create }
 }
+
+const randomAddress = () => `0x${randomBytes(20).toString('hex')}`
 
 export default function CreateRoot() {
   const {
@@ -64,22 +67,40 @@ export default function CreateRoot() {
     }
   }, [merkleRoot, router])
 
+  const handleLoadExample = useCallback(() => {
+    const addresses = Array(Math.floor(Math.random() * 16) + 3)
+      .fill(0)
+      .map(() => randomAddress())
+
+    addressInputSet(addresses.join('\n'))
+  }, [])
+
   const buttonPending = status === 'loading' || merkleRoot !== undefined
 
   return (
     <div className="flex flex-col items-start gap-y-8">
-      <textarea
-        className={classNames(
-          'w-full min-h-fit border-2 border-neutral-200 resize-none',
-          'focus:outline-none',
-          'p-4 rounded-lg',
-          'font-mono',
-          'h-44',
+      <div className="relative w-full">
+        <textarea
+          className={classNames(
+            'w-full min-h-fit border-2 border-neutral-200 resize-none',
+            'focus:outline-none',
+            'p-4 rounded-lg',
+            'font-mono',
+            'h-44',
+          )}
+          value={addressInput}
+          onChange={(e) => addressInputSet(e.target.value)}
+          placeholder="Paste addresses here, separated by commas, spaces or new lines"
+        />
+        {parsedAddressesCount === 0 && (
+          <button
+            className="absolute bottom-4 right-4"
+            onClick={handleLoadExample}
+          >
+            Load example
+          </button>
         )}
-        value={addressInput}
-        onChange={(e) => addressInputSet(e.target.value)}
-        placeholder="Paste addresses here, separated by commas, spaces or new lines"
-      />
+      </div>
 
       <div className="flex flex-col sm:flex-row w-full gap-x-4 gap-y-2 items-center">
         <Button
