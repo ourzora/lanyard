@@ -204,9 +204,11 @@ func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
 		s.sendJSONError(r, w, err, http.StatusNotFound, "tree not found for root")
 		return
 	} else if err != nil {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to select leaves")
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to select tree")
 		return
 	}
+
+	w.Header().Set("Cache-Control", "public, max-age=3600")
 
 	var l []hexutil.Bytes
 	for i := range row.UnhashedLeaves {

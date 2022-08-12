@@ -17,11 +17,11 @@ type getProofResp struct {
 
 func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	var (
-		root = r.URL.Query().Get("root")
-		leaf = r.URL.Query().Get("unhashedLeaf")
-		addr = r.URL.Query().Get("address")
+		rootStr = r.URL.Query().Get("root")
+		leaf    = r.URL.Query().Get("unhashedLeaf")
+		addr    = r.URL.Query().Get("address")
 	)
-	if root == "" {
+	if rootStr == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
@@ -30,16 +30,28 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	root := common.FromHex(rootStr)
+
+	exists, err := s.dbq.SelectTreeExists(r.Context(), root)
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "failed to check tree exists")
+		return
+	}
+
+	if !exists {
+		s.sendJSONError(r, w, nil, http.StatusNotFound, "tree not found")
+		return
+	}
+
 	var (
 		unhashedLeaf *string
 		proof        [][]byte
-		err          error
 	)
 
 	if leaf != "" {
 		unhashedLeaf = &leaf
 		proof, err = s.dbq.SelectProofByUnhashedLeaf(r.Context(), queries.SelectProofByUnhashedLeafParams{
-			Root:         common.FromHex(root),
+			Root:         root,
 			UnhashedLeaf: common.FromHex(leaf),
 		})
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
@@ -48,7 +60,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		rows, err := s.dbq.SelectProofByAddress(r.Context(), queries.SelectProofByAddressParams{
-			Root:    common.FromHex(root),
+			Root:    root,
 			Address: common.HexToAddress(addr).Bytes(),
 		})
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
@@ -72,7 +84,10 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		resp.Proof = append(resp.Proof, common.BytesToHash(proof[i]).String())
 	}
 
-	// cache for 1 year
-	w.Header().Set("Cache-Control", "public, max-age=31536000")
+	// cache for 1 year if we're returning an unhashed leaf proof
+	if leaf != "" {
+		w.Header().Set("Cache-Control", "public, max-age=31536000")
+	}
+
 	s.sendJSON(r, w, resp)
 }

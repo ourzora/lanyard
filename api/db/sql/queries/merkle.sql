@@ -24,3 +24,6 @@ select proof, unhashed_leaf
 from merkle_proofs
 where root = $1
 and address = $2;
+
+-- name: SelectTreeExists :one
+select exists(select 1 from merkle_trees where root = $1);
