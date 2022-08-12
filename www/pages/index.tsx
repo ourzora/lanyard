@@ -6,7 +6,7 @@ export default function CreatePage() {
   return (
     <div className="flex flex-col">
       <PageTitle>
-        Create an allow list in seconds that works across all of web3
+        Create an allow list in seconds that works across web3
       </PageTitle>
 
       <CreateRoot />
