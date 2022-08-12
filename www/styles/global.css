@@ -5,4 +5,5 @@
 :root {
   height: 100%;
   text-rendering: geometricPrecision;
+  font-family: 'Chivo', sans-serif;
 }

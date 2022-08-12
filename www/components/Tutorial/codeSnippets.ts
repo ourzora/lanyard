@@ -3,8 +3,8 @@ npm install merkletreejs ethers
 `.trim()
 
 const addressPlaceholderComments = [
-  'your addresses will be filled in here',
-  'when you click the "Copy code" button',
+  'your addresses will be filled in here automatically when',
+  'you click the "Copy" button on the top of this code block',
 ]
   .map((comment) => `  // ${comment}`)
   .join('\n')
@@ -43,22 +43,12 @@ export function getMerkleProof(address: string) {
 export const passMerkleProofCode = `
 import { getMerkleProof } from './merkle.ts';
 
-// right before minting, get the merkle proof for the current wallet
+// right before minting, get the Merkle proof for the current wallet
 // const walletAddress = ...
 const merkleProof = getMerkleProof(walletAddress);
 
 // pass this to your contract
 await myContract.mintAllowList(merkleProof);
-`.trim()
-
-export const ourLibraryCode = `
-import { getMerkleProof } from 'merklefoolib';
-
-// Get your merkle root from the merkle.foo website and paste here
-const merkleRoot = '0x0123456789abcdef0123456789abcdef01234567';
-
-const walletAddress = '0x1000000000000000000000000000000000000000';
-const proof = await getMerkleProof(merkleRoot, walletAddress);
 `.trim()
 
 export const nftMerkleProofCode = `

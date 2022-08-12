@@ -2,7 +2,12 @@ import useSWR from 'swr'
 
 import { client } from './client'
 import { fetcher } from './helpers'
-import { ErrorResponse, isErrorResponse, CreateMerkleResponse } from './types'
+import {
+  ErrorResponse,
+  isErrorResponse,
+  CreateMerkleResponse,
+  TreeResponse,
+} from './types'
 
 export * from './helpers'
 export * from './client'
@@ -55,4 +60,15 @@ export async function createMerkleRoot(
   }
 
   return (await res.json()) as CreateMerkleResponse
+}
+
+export async function getMerkleTree(root: string) {
+  const query = new URLSearchParams({ root })
+  const res = await client('GET', `v1/tree?${query.toString()}`)
+
+  if (!res.ok) {
+    throw new Error('Invalid response from server')
+  }
+
+  return (await res.json()) as TreeResponse
 }

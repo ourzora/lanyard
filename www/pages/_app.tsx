@@ -5,6 +5,7 @@ import Providers from 'components/Providers'
 import Layout from 'components/Layout'
 
 import '../styles/global.css'
+import '../styles/fonts.css'
 
 function App({ Component, pageProps }: AppProps) {
   return (

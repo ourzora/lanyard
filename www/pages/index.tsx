@@ -1,104 +1,50 @@
-import { useAsync } from '@react-hook/async'
-import classNames from 'classnames'
-import Tutorial from 'components/Tutorial'
-import { useCallback, useMemo, useState } from 'react'
-import { isErrorResponse, createMerkleRoot } from 'utils/api'
-import Button from 'components/Button'
-import { parseAddressesFromText } from 'utils/addressParsing'
-
-const useCreateMerkleRoot = () => {
-  const [{ value, status }, create] = useAsync(
-    async (addresses: string[]) => await createMerkleRoot(addresses),
-  )
-
-  const merkleRoot = useMemo(() => {
-    if (value === undefined) return undefined
-    if (isErrorResponse(value)) return undefined
-    return value.merkleRoot
-  }, [value])
-
-  const error = useMemo(() => {
-    if (isErrorResponse(value)) return value
-    return undefined
-  }, [value])
-
-  return { merkleRoot, error, status, create }
-}
+import CreateRoot from 'components/CreateRoot'
+import FAQ from 'components/FAQ'
+import PageTitle from 'components/PageTitle'
 
 export default function CreatePage() {
-  const {
-    merkleRoot,
-    error: errorResponse,
-    status,
-    create,
-  } = useCreateMerkleRoot()
-  const [addressInput, addressInputSet] = useState('')
-
-  const handleSubmit = useCallback(() => {
-    if (addressInput.trim().length === 0) {
-      return
-    }
-
-    const addresses = parseAddressesFromText(addressInput)
-    create(addresses)
-  }, [addressInput, create])
-
-  const parsedAddresses = useMemo(() => {
-    if (addressInput.trim().length === 0) {
-      return []
-    }
-
-    return parseAddressesFromText(addressInput)
-  }, [addressInput])
-
-  const parsedAddressesCount = useMemo(
-    () => parsedAddresses.length,
-    [parsedAddresses],
-  )
-
   return (
-    <div className="flex flex-col items-start gap-y-2">
-      <textarea
-        className={classNames(
-          'w-full min-h-fit border-2',
-          'focus:outline-none',
-          'p-4 rounded-lg',
-        )}
-        style={{ minHeight: '8rem' }}
-        value={addressInput}
-        onChange={(e) => addressInputSet(e.target.value)}
-        placeholder="Paste addresses here separated by commas, spaces, or new lines"
-      />
+    <div className="flex flex-col">
+      <PageTitle>
+        Create an allow list in seconds that works across all of web3
+      </PageTitle>
 
-      <div className="flex gap-4 items-center">
-        <Button
-          onClick={handleSubmit}
-          label="Create Merkle Root"
-          pending={status === 'loading'}
-          disabled={parsedAddressesCount === 0}
+      <CreateRoot />
+
+      <div className="flex gap-3 sm:gap-4 text-base mt-24 items-center">
+        <img
+          src="/collablogos.png"
+          alt="partner logos"
+          className="w-[64px] sm:w-[72px]"
         />
-
-        {parsedAddressesCount > 0 && (
-          <div>
-            {parsedAddressesCount} address
-            {parsedAddressesCount === 1 ? '' : 'es'} found
-          </div>
-        )}
+        <div>
+          An open source project from{' '}
+          <PartnerLink href="https://context.app">Context</PartnerLink>,{' '}
+          <PartnerLink href="https://zora.co">Zora</PartnerLink>, and{' '}
+          <PartnerLink href="https://mint.fun">mint.fun</PartnerLink>
+        </div>
       </div>
 
-      {status === 'success' && (
-        <>
-          {merkleRoot !== undefined && <div>Merkle root: {merkleRoot}</div>}
-          {errorResponse !== undefined && (
-            <div>Error: {errorResponse.message}</div>
-          )}
-        </>
-      )}
+      <div className="h-px bg-neutral-200 mt-4 sm:mt-8 mb-10 sm:mb-16 w-full" />
 
-      {/* spacer */}
-      <div className="mt-10" />
-
-      <Tutorial addresses={parsedAddresses} />
+      <FAQ />
     </div>
   )
 }
+
+const PartnerLink = ({
+  href,
+  children,
+}: {
+  href: string
+  children: React.ReactNode
+}) => (
+  <a
+    href={href}
+    className="font-bold hover:underline"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    {children}
+  </a>
+)

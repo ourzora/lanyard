@@ -1,29 +1,34 @@
 import React from 'react'
 import NextHead from 'next/head'
 
-import MetaTags from 'components/MetaTags'
-
-const siteDescription = ''
-
 function Head() {
-  const defaultImageUrl = undefined
   return (
-    <>
-      <MetaTags description={siteDescription} imageUrl={defaultImageUrl} />
-      <NextHead>
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon180.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icon32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icon16.png" />
-        <link rel="manifest" href="/site.webmanifest" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <meta name="msapplication-TileColor" content="#aaaaaa" />
-        <meta name="theme-color" content="#aaaaaa" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1"
-        />
-      </NextHead>
-    </>
+    <NextHead>
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <link
+        rel="apple-touch-icon"
+        sizes="180x180"
+        href="/apple-touch-icon.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="/favicon-32x32.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="16x16"
+        href="/favicon-16x16.png"
+      />
+      <link rel="manifest" href="/site.webmanifest" />
+      <meta name="msapplication-TileColor" content="#6dfa8c" />
+      <meta name="theme-color" content="#6dfa8c" />
+    </NextHead>
   )
 }
 
