@@ -119,7 +119,9 @@ export default function CreateRoot() {
       </div>
 
       {status === 'success' && errorResponse !== undefined && (
-        <div className="text-center w-full">Error: {errorResponse.message}</div>
+        <div className="text-center sm:text-left w-full">
+          Error: {errorResponse.message}
+        </div>
       )}
     </div>
   )
