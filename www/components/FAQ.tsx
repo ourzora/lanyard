@@ -8,8 +8,20 @@ export default function FAQ() {
       <QandA>
         <Question>What is Lanyard?</Question>
         <Answer>
-          Lanyard is a free and open source tool for quickly and easily
-          generating a Merkle root for your NFT project allow list.
+          1. A Merkle root generator: just paste the addresses you want to
+          allow, and we generate and return your root instantly
+          <br />
+          2. A step-by-step guide{' ( '}
+          <Link
+            href="/tree/0x9bcb34c8aba34a442d549dc3ae29995d5d1646440b80329ba55f6978a5bf23ce"
+            passHref
+          >
+            <a className={brandUnderlineClasses}>example</a>
+          </Link>
+          {' )'} on how to properly implement the Merkle root in your project –
+          with free support via Discord if you need it
+          <br />
+          3. A mechanism to ensure your allowlist works across web3
         </Answer>
       </QandA>
       <QandA>
@@ -51,15 +63,13 @@ export default function FAQ() {
         </Answer>
       </QandA>
       <QandA>
-        <Question>
-          I’m building a minting platform – how do I integrate Lanyard?
-        </Question>
+        <Question>I build creator tools – how do I integrate Lanyard?</Question>
         <Answer>
           See our API documentation{' '}
           <Link href="/docs">
             <a className={brandUnderlineClasses}>here</a>
-          </Link>
-          .
+          </Link>{' '}
+          so your creators’ allowlists work with Lanyard.
         </Answer>
       </QandA>
       <QandA>
@@ -75,7 +85,8 @@ export default function FAQ() {
           >
             DM us on Twitter
           </a>{' '}
-          if you want to contribute.
+          if you want to contribute or want your integration listed on this
+          page.
         </Answer>
       </QandA>
     </div>

@@ -28,14 +28,14 @@ export default function MerkleRootPage({
           <CodeBlock language="txt" code={merkleRoot} oneLiner />
         </div>
         <div>
-          Need help using your Merkle root?{' '}
+          Wire up your Merkle root with the guide below. If you need help,{' '}
           <a
             href="https://discord.gg/context"
             target="_blank"
             rel="noreferrer noopener"
             className={brandUnderlineClasses}
           >
-            Message us on Discord
+            message us on Discord
           </a>
         </div>
       </div>
