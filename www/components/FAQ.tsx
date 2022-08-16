@@ -36,7 +36,7 @@ export default function FAQ() {
           >
             Merkle root
           </a>{' '}
-          is the most popular way to handle allow lists for projects using the
+          is the most popular way to handle allowlists for projects using the
           blockchain. By using a Merkle root, you and your community pay
           significantly less in gas fees to prove a wallet is allowed to mint a
           specific project. This is done by proving an address belongs to a tree
@@ -45,10 +45,10 @@ export default function FAQ() {
       </QandA>
       <QandA>
         <Question>
-          What do you mean when you say my allow list will work across web3?
+          What do you mean when you say my allowlist will work across web3?
         </Question>
         <Answer>
-          Lanyard securely stores your allow list and Merkle root so that your
+          Lanyard securely stores your allowlist and Merkle root so that your
           community can mint your project from their preferred interface – your
           website,{' '}
           <a
