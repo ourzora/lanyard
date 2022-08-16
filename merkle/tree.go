@@ -113,8 +113,6 @@ func (t Tree) Proof(target []byte) [][]byte {
 
 // Cumulatively hashes the list pairwise starting with
 // (target, proof[0]). Finally, the cumulative hash is compared with the root.
-// If the tree was created with SortPairs then SortPairs must be specified
-// here as well.
 func Valid(root []byte, proof [][]byte, target []byte) bool {
 	target = crypto.Keccak256(target)
 	for i := range proof {
