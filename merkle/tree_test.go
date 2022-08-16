@@ -74,85 +74,24 @@ func TestRoot(t *testing.T) {
 func TestProof(t *testing.T) {
 	cases := []struct {
 		leaves [][]byte
-		leaf   []byte
 	}{
 		{
 			leaves: [][]byte{
 				[]byte("a"),
 				[]byte("b"),
 				[]byte("c"),
+				[]byte("d"),
+				[]byte("e"),
 			},
-			leaf: []byte("a"),
 		},
 	}
 
 	for _, tc := range cases {
 		mt := New(tc.leaves, SortPairs, SortLeaves)
-		pf := mt.Proof(tc.leaf)
-		if !Valid(mt.Root(), pf, tc.leaf) {
-			t.Error("invalid proof")
-		}
-	}
-}
-
-func hexStrArr2ByteArr(addrStrs []string) [][]byte {
-	var addrs [][]byte
-	for i := range addrStrs {
-		addrs = append(addrs, common.FromHex(addrStrs[i]))
-	}
-	return addrs
-}
-
-func TestProofFiveAddresses(t *testing.T) {
-	addrStrs := []string{
-		"0x0000000000000000000000000000000000000001",
-		"0x0000000000000000000000000000000000000002",
-		"0x0000000000000000000000000000000000000003",
-		"0x0000000000000000000000000000000000000004",
-		"0x0000000000000000000000000000000000000005",
-	}
-	addrs := hexStrArr2ByteArr(addrStrs)
-
-	tree := New(addrs, SortPairs)
-
-	proofs := [][]string{
-		{
-			"d52688a8f926c816ca1e079067caba944f158e764817b83fc43594370ca9cf62",
-			"735c77c52a2b69afcd4e13c0a6ece7e4ccdf2b379d39417e21efe8cd10b5ff1b",
-			"421df1fa259221d02aa4956eb0d35ace318ca24c0a33a64c1af96cf67cf245b6",
-		},
-		{
-			"1468288056310c82aa4c01a7e12a10f8111a0560e72b700555479031b86c357d",
-			"735c77c52a2b69afcd4e13c0a6ece7e4ccdf2b379d39417e21efe8cd10b5ff1b",
-			"421df1fa259221d02aa4956eb0d35ace318ca24c0a33a64c1af96cf67cf245b6",
-		},
-		{
-			"a876da518a393dbd067dc72abfa08d475ed6447fca96d92ec3f9e7eba503ca61",
-			"f95c14e6953c95195639e8266ab1a6850864d59a829da9f9b13602ee522f672b",
-			"421df1fa259221d02aa4956eb0d35ace318ca24c0a33a64c1af96cf67cf245b6",
-		},
-		{
-			"5b70e80538acdabd6137353b0f9d8d149f4dba91e8be2e7946e409bfdbe685b9",
-			"f95c14e6953c95195639e8266ab1a6850864d59a829da9f9b13602ee522f672b",
-			"421df1fa259221d02aa4956eb0d35ace318ca24c0a33a64c1af96cf67cf245b6",
-		},
-		{
-			"5071e19149cc9b870c816e671bc5db717d1d99185c17b082af957a0a93888dd9",
-		},
-	}
-
-	for i, addr := range addrs {
-		actual := tree.Proof(addr)
-		expected := hexStrArr2ByteArr(proofs[i])
-		if len(actual) != len(expected) {
-			t.Errorf("got: %d want: %d", len(actual), len(expected))
-		}
-		for j := range actual {
-			if !bytes.Equal(actual[j], expected[j]) {
-				t.Errorf("got: %s want: %s",
-					common.Bytes2Hex(actual[j]),
-					common.Bytes2Hex(expected[j]),
-				)
+		for _, l := range tc.leaves {
+			pf := mt.Proof(l)
+			if !Valid(mt.Root(), pf, l) {
+				t.Error("invalid proof")
 			}
 		}
 	}
