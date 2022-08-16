@@ -1,4 +1,13 @@
-// merkle tree for nft allow lists
+// A merkle tree for [lanyard.build].
+// merkle uses keccak256 hashing for leaves
+// and intermediary nodes and therefore is vulnerable to a
+// second preimage attack. This package does not duplicate or pad leaves in
+// the case of odd cardinality and therefore may be unsafe for certain
+// use cases. If you are curious about this type of bug,
+// see the following [bitcoin issue].
+//
+// [bitcoin issue]: https://bitcointalk.org/index.php?topic=102395.0
+// [lanyard.build]: https://lanyard.build
 package merkle
 
 import (
@@ -7,6 +16,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+// A the outer list represents levels in the tree. Each level is a list
+// of nodes in the tree. Each node is a hash of its children.
 type Tree [][][]byte
 
 // Returns a complete Tree using items for the leaves.
@@ -44,13 +55,13 @@ func hashMerge(level [][]byte) [][]byte {
 	for i := 0; i < len(level); i += 2 {
 		switch {
 		case i+1 == len(level):
-			//In the case of a level with an odd number of nodes
-			//we leave the parent with a single child.
-			//Some merkle tree designs allow for the parent
-			//to duplicate the child so that it has both children
-			//thus leaving the level with an even number of nodes.
-			//We don't have that requirement yet and if one day we do
-			//this is the spot to change:
+			// In the case of a level with an odd number of nodes
+			// we leave the parent with a single child.
+			// Some merkle tree designs allow for the parent
+			// to duplicate the child so that it has both children
+			// thus leaving the level with an even number of nodes.
+			// We don't have that requirement yet and if one day we do
+			// this is the spot to change:
 			newLevel = append(newLevel, level[i])
 		default:
 			newLevel = append(newLevel, hashPair(level[i], level[i+1]))
@@ -63,8 +74,17 @@ func (t Tree) Root() []byte {
 	return t[len(t)-1][0]
 }
 
-// Produces a list of hashes that represent the path
-// from the target's sibling to the root node.
+// Returns a list of hashes such that
+// cumulatively hashing the list pairwise
+// will yield the root hash of the tree. Example:
+//  [abcd]
+//  [ab, cd]
+//  [a, b, c, d]
+//
+// If the target is 'c' we will
+// need to return [d, ab]
+//
+// The result of this func will be used in [Valid]
 func (t Tree) Proof(target []byte) [][]byte {
 	var (
 		proof [][]byte
@@ -91,6 +111,10 @@ func (t Tree) Proof(target []byte) [][]byte {
 	return proof
 }
 
+// Cumulatively hashes the list pairwise starting with
+// (target, proof[0]). Finally, the cumulative hash is compared with the root.
+// If the tree was created with SortPairs then SortPairs must be specified
+// here as well.
 func Valid(root []byte, proof [][]byte, target []byte) bool {
 	target = crypto.Keccak256(target)
 	for i := range proof {
