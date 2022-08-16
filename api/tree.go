@@ -145,7 +145,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 	for i := range req.Leaves {
 		leaves = append(leaves, req.Leaves[i])
 	}
-	tree := merkle.New(leaves, merkle.SortPairs)
+	tree := merkle.New(leaves)
 	err = q.InsertTree(r.Context(), queries.InsertTreeParams{
 		Root:           tree.Root(),
 		UnhashedLeaves: leaves,

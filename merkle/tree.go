@@ -3,48 +3,18 @@ package merkle
 
 import (
 	"bytes"
-	"sort"
 
 	"github.com/ethereum/go-ethereum/crypto"
 )
-
-type option int
-
-const (
-	//sort hashed leaves in asc order
-	SortLeaves option = iota
-	//sort the intermediary nodes in the tree. most projects use this option
-	SortPairs
-)
-
-func has(opts []option, o option) bool {
-	for i := range opts {
-		if opts[i] == o {
-			return true
-		}
-	}
-	return false
-}
 
 type Tree [][][]byte
 
 // Returns a complete Tree using items for the leaves.
 // Intermediary nodes and items will be hashed using Keccak256.
-//
-// When SortLeaves is requested, the leaves are sorted after
-// they are hashed.
-//
-// When SortPairs is requested, the intermediary nodes are constructed
-// such that the a parent's left child is less than the parent's right child.
-func New(items [][]byte, opts ...option) Tree {
+func New(items [][]byte) Tree {
 	var leaves [][]byte
 	for i := range items {
 		leaves = append(leaves, crypto.Keccak256(items[i]))
-	}
-	if has(opts, SortLeaves) {
-		sort.Slice(leaves, func(i, j int) bool {
-			return bytes.Compare(leaves[i], leaves[j]) == -1 // i < j
-		})
 	}
 	var t Tree
 	t = append(t, leaves)
@@ -54,32 +24,22 @@ func New(items [][]byte, opts ...option) Tree {
 		if len(level) == 1 { //root node
 			break
 		}
-		f := hashPairNoSort
-		if has(opts, SortPairs) {
-			f = hashPairSort
-		}
-		t = append(t, hashMerge(level, f))
+		t = append(t, hashMerge(level))
 	}
 	return t
 }
 
-type hashPair func(a, b []byte) []byte
-
-func hashPairNoSort(a, b []byte) []byte {
-	return crypto.Keccak256(append(a, b...))
-}
-
-func hashPairSort(a, b []byte) []byte {
+func hashPair(a, b []byte) []byte {
 	if bytes.Compare(a, b) == -1 { // a < b
-		return crypto.Keccak256(append(a, b...))
+		return crypto.Keccak256(a, b)
 	}
-	return crypto.Keccak256(append(b, a...))
+	return crypto.Keccak256(b, a)
 }
 
 // Iterates through the level pairwise merging each
 // pair with a hash function creating a new level that
 // is half the size of the level.
-func hashMerge(level [][]byte, f hashPair) [][]byte {
+func hashMerge(level [][]byte) [][]byte {
 	var newLevel [][]byte
 	for i := 0; i < len(level); i += 2 {
 		switch {
@@ -93,7 +53,7 @@ func hashMerge(level [][]byte, f hashPair) [][]byte {
 			//this is the spot to change:
 			newLevel = append(newLevel, level[i])
 		default:
-			newLevel = append(newLevel, f(level[i], level[i+1]))
+			newLevel = append(newLevel, hashPair(level[i], level[i+1]))
 		}
 	}
 	return newLevel
@@ -134,7 +94,7 @@ func (t Tree) Proof(target []byte) [][]byte {
 func Valid(root []byte, proof [][]byte, target []byte) bool {
 	target = crypto.Keccak256(target)
 	for i := range proof {
-		target = hashPairSort(target, proof[i])
+		target = hashPair(target, proof[i])
 	}
 	return bytes.Equal(target, root)
 }
