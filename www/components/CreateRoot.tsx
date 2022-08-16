@@ -92,14 +92,6 @@ export default function CreateRoot() {
           onChange={(e) => addressInputSet(e.target.value)}
           placeholder="Paste addresses here, separated by commas, spaces or new lines"
         />
-        {parsedAddressesCount === 0 && (
-          <button
-            className="absolute bottom-4 right-4"
-            onClick={handleLoadExample}
-          >
-            Load example
-          </button>
-        )}
       </div>
 
       <div className="flex flex-col sm:flex-row w-full gap-x-4 gap-y-2 items-center">
@@ -109,6 +101,13 @@ export default function CreateRoot() {
           pending={buttonPending}
           disabled={parsedAddressesCount === 0}
           className="w-full max-w-[30rem] h-[66px]"
+        />
+
+        <Button
+          disabled={parsedAddressesCount > 0}
+          onClick={handleLoadExample}
+          label="Load example"
+          className="w-full max-w-[30rem] sm:w-60 h-[66px]"
         />
 
         {parsedAddressesCount > 0 && (
