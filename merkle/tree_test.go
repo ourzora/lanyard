@@ -29,16 +29,8 @@ func ExampleTree() {
 	tr = New(addrs)
 	fmt.Println(common.Bytes2Hex(tr.Root()))
 
-	tr = New(addrs, SortPairs)
-	fmt.Println(common.Bytes2Hex(tr.Root()))
-
-	tr = New(addrs, SortPairs, SortLeaves)
-	fmt.Println(common.Bytes2Hex(tr.Root()))
-
 	// Output:
-	// cc32560f07705feff369dc58b2d65438e59395399f1e4c2b19758f3a752db050
 	// ed40d49077a2cd13601cf79a512e6b92c7fd0f952e7dc9f4758d7134f9712bc4
-	// 51c19eb453389ea5e10f221da238d321cde4f8979f65bde8445581320620bed5
 }
 
 func TestRoot(t *testing.T) {
@@ -56,12 +48,12 @@ func TestRoot(t *testing.T) {
 				[]byte("e"),
 				[]byte("f"),
 			},
-			wantRoot: common.Hex2Bytes("1b404f199ea828ec5771fb30139c222d8417a82175fefad5cd42bc3a189bd8d5"),
+			wantRoot: common.Hex2Bytes("9012f1e18a87790d2e01faace75aaaca38e53df437cdce2c0552464dda4af49c"),
 		},
 	}
 
 	for _, tc := range cases {
-		mt := New(tc.leaves, SortPairs, SortLeaves)
+		mt := New(tc.leaves)
 		if !bytes.Equal(mt.Root(), tc.wantRoot) {
 			t.Errorf("got: %s want: %s",
 				common.Bytes2Hex(mt.Root()),
@@ -87,7 +79,7 @@ func TestProof(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		mt := New(tc.leaves, SortPairs, SortLeaves)
+		mt := New(tc.leaves)
 		for _, l := range tc.leaves {
 			pf := mt.Proof(l)
 			if !Valid(mt.Root(), pf, l) {
