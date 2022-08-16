@@ -14,4 +14,4 @@ go run github.com/tailscale/mkctr@latest \
   --push \
 /usr/local/bin/api
 
-flyctl deploy --detach -i registry.fly.io/al-prod:latest
+flyctl deploy --detach -i registry.fly.io/al-prod:latest -a al-prod

@@ -1,6 +1,5 @@
 # fly.toml file generated for al-prod on 2022-08-04T14:39:52-07:00
 
-app = "al-prod"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
