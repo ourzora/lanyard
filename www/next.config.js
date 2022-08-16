@@ -6,7 +6,7 @@ module.exports = {
     ]
 
     // forward /api/ requests to the real api
-    // this should be done be fastly in production
+    // this should be done on the CDN level in production
     rewrites.push({
       source: '/api/:path*',
       destination: process.env.API_URL + '/api/:path*',
