@@ -29,7 +29,8 @@ CREATE TABLE public.merkle_trees (
     root bytea NOT NULL,
     unhashed_leaves bytea[] NOT NULL,
     ltd text[],
-    packed boolean
+    packed boolean,
+    proofs jsonb
 );
 
 
