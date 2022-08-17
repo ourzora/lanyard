@@ -35,7 +35,7 @@ export default function MerkleRootPage({
             rel="noreferrer noopener"
             className={brandUnderlineClasses}
           >
-            message us on Discord
+            message us on Discord.
           </a>
         </div>
       </div>
