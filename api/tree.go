@@ -176,14 +176,15 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 
 	br := q.InsertProof(r.Context(), rows)
 
+	var batchErr error
 	br.Exec(func(i int, err error) {
 		if err != nil {
-			s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to insert proof")
+			batchErr = err
 			return
 		}
 	})
 
-	if err != nil {
+	if batchErr != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to persist merkle proofs")
 		return
 	}
