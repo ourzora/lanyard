@@ -13,6 +13,7 @@ export default function Layout({ children }: Props) {
     <div className="flex flex-col items-center overflow-x-hidden pb-20">
       <MetaTags
         description={siteDescription}
+        // og:image spec requires full url, can't use path for image
         imageUrl="https://lanyard.build/meta-image.png"
       />
       <Head />
