@@ -8,17 +8,23 @@ export default function FAQ() {
       <QandA>
         <Question>What is Lanyard?</Question>
         <Answer>
-          1. A Merkle root generator: just paste the addresses you want to
-          allow, and we generate and return your root instantly
-          <br />
-          2. A step-by-step guide{' ('}
-          <Link href="/tree/sample" passHref>
-            <a className={brandUnderlineClasses}>example</a>
-          </Link>
-          {')'} on how to properly implement the Merkle root in your project –
-          with free support via Discord if you need it
-          <br />
-          3. A mechanism to ensure your allowlist works across web3
+          <ol className="list-decimal pl-5">
+            <li className="pl-1">
+              A Merkle root generator: just paste the addresses you want to
+              allow, and we generate and return your root instantly
+            </li>
+            <li className="pl-1">
+              A step-by-step guide{' ('}
+              <Link href="/tree/sample" passHref>
+                <a className={brandUnderlineClasses}>example</a>
+              </Link>
+              {')'} on how to properly implement the Merkle root in your project
+              – with free support via Discord if you need it
+            </li>
+            <li className="pl-1">
+              A mechanism to ensure your allowlist works across web3
+            </li>
+          </ol>
         </Answer>
       </QandA>
       <QandA>

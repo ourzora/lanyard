@@ -22,7 +22,7 @@ export default function MerkleRootPage({
     <div className="flex flex-col gap-y-[4rem]">
       <div className="bg-brand-light outline outline-brand outline-2 rounded-xl p-4">
         <p>
-          This is a sample root. Want to generate your own list? Go to the{' '}
+          This is a sample root. Want to generate your own? Go to the{' '}
           <Link href="/" passHref>
             <a className="underline">homepage</a>
           </Link>{' '}
