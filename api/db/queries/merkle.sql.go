@@ -10,29 +10,6 @@ import (
 	"database/sql"
 )
 
-const insertProof = `-- name: InsertProof :exec
-insert into merkle_proofs (root, unhashed_leaf, address, proof)
-values ($1, $2, $3, $4)
-on conflict (root, unhashed_leaf) do nothing
-`
-
-type InsertProofParams struct {
-	Root         []byte   `json:"root"`
-	UnhashedLeaf []byte   `json:"unhashedLeaf"`
-	Address      []byte   `json:"address"`
-	Proof        [][]byte `json:"proof"`
-}
-
-func (q *Queries) InsertProof(ctx context.Context, arg InsertProofParams) error {
-	_, err := q.db.Exec(ctx, insertProof,
-		arg.Root,
-		arg.UnhashedLeaf,
-		arg.Address,
-		arg.Proof,
-	)
-	return err
-}
-
 const insertTree = `-- name: InsertTree :exec
 insert into merkle_trees (root, unhashed_leaves, ltd, packed)
 values ($1, $2, $3, $4)

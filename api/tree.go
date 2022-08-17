@@ -157,22 +157,35 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rows := make([]queries.InsertProofParams, 0, len(leaves))
+
 	for _, leaf := range leaves {
 		proof := tree.Proof(leaf)
 		if len(proof) == 0 {
 			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Must provide addresses that result in a proof")
 			return
 		}
-		err := q.InsertProof(r.Context(), queries.InsertProofParams{
+
+		rows = append(rows, queries.InsertProofParams{
 			Root:         tree.Root(),
 			UnhashedLeaf: leaf,
 			Address:      leaf2AddrBytes(leaf, req.Ltd, req.Packed.Bool),
 			Proof:        proof,
 		})
+	}
+
+	br := q.InsertProof(r.Context(), rows)
+
+	br.Exec(func(i int, err error) {
 		if err != nil {
-			s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to persist merkle proofs")
+			s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to insert proof")
 			return
 		}
+	})
+
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to persist merkle proofs")
+		return
 	}
 
 	err = tx.Commit(r.Context())

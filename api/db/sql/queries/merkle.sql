@@ -8,7 +8,7 @@ select unhashed_leaves, ltd, packed
 from merkle_trees
 where root = $1;
 
--- name: InsertProof :exec
+-- name: InsertProof :batchexec
 insert into merkle_proofs (root, unhashed_leaf, address, proof)
 values ($1, $2, $3, $4)
 on conflict (root, unhashed_leaf) do nothing;
