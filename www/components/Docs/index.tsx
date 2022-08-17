@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { brandUnderlineClasses } from 'utils/theme'
 import PageTitle from 'components/PageTitle'
 import CodeBlock from 'components/CodeBlock'
 import { createCode, lookupCode, proofCode } from './codeSnippets'
@@ -7,7 +9,19 @@ export default function Docs() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col mb-5 sm:mb-10">
-        <PageTitle>API Documentation</PageTitle>
+        <PageTitle noPadding>API Documentation</PageTitle>
+        <p className="mt-4 mb-10">
+          Looking for an example on how to implement Merkle roots in your
+          contract?{' '}
+          <Link
+            href="/tree/0x9bcb34c8aba34a442d549dc3ae29995d5d1646440b80329ba55f6978a5bf23ce"
+            passHref
+          >
+            <a className={brandUnderlineClasses}>
+              Here’s a guide with our example root.
+            </a>
+          </Link>
+        </p>
         <div className="h-px bg-neutral-200 w-full" />
       </div>
 
