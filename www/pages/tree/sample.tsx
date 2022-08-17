@@ -30,6 +30,7 @@ export default function MerkleRootPage({
           <Link href="/docs" passHref>
             <a className="underline">API</a>
           </Link>
+          .
         </p>
       </div>
       <div className="flex flex-col gap-y-4">
