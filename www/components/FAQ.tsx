@@ -9,11 +9,11 @@ export default function FAQ() {
         <Question>What is Lanyard?</Question>
         <Answer>
           <ol className="list-decimal pl-5">
-            <li>
+            <li className="pl-1">
               A Merkle root generator: just paste the addresses you want to
               allow, and we generate and return your root instantly
             </li>
-            <li>
+            <li className="pl-1">
               A step-by-step guide{' ('}
               <Link href="/tree/sample" passHref>
                 <a className={brandUnderlineClasses}>example</a>
@@ -21,7 +21,9 @@ export default function FAQ() {
               {')'} on how to properly implement the Merkle root in your project
               – with free support via Discord if you need it
             </li>
-            <li>A mechanism to ensure your allowlist works across web3</li>
+            <li className="pl-1">
+              A mechanism to ensure your allowlist works across web3
+            </li>
           </ol>
         </Answer>
       </QandA>
