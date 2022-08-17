@@ -88,3 +88,16 @@ func TestProof(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkProof(b *testing.B) {
+	var leaves [][]byte
+	for i := 0; i < 10000; i++ {
+		leaves = append(leaves, []byte{byte(i)})
+	}
+	mt := New(leaves)
+	for i := 0; i < b.N; i++ {
+		for _, l := range leaves {
+			mt.Proof(l)
+		}
+	}
+}

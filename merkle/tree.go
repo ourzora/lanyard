@@ -87,14 +87,16 @@ func (t Tree) Root() []byte {
 // The result of this func will be used in [Valid]
 func (t Tree) Proof(target []byte) [][]byte {
 	var (
-		proof [][]byte
+		ht    = crypto.Keccak256(target)
 		index int
 	)
 	for i, h := range t[0] {
-		if bytes.Equal(crypto.Keccak256(target), h) {
+		if bytes.Equal(ht, h) {
 			index = i
 		}
 	}
+
+	var proof [][]byte
 	for _, level := range t {
 		var i int
 		switch {
