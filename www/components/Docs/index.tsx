@@ -13,10 +13,7 @@ export default function Docs() {
         <p className="mt-4 mb-10">
           Looking for an example on how to implement Merkle roots in your
           contract?{' '}
-          <Link
-            href="/tree/0x9bcb34c8aba34a442d549dc3ae29995d5d1646440b80329ba55f6978a5bf23ce"
-            passHref
-          >
+          <Link href="/tree/sample" passHref>
             <a className={brandUnderlineClasses}>
               Here’s a guide with our sample root.
             </a>

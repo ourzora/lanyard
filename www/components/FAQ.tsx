@@ -12,10 +12,7 @@ export default function FAQ() {
           allow, and we generate and return your root instantly
           <br />
           2. A step-by-step guide{' ('}
-          <Link
-            href="/tree/0x9bcb34c8aba34a442d549dc3ae29995d5d1646440b80329ba55f6978a5bf23ce"
-            passHref
-          >
+          <Link href="/tree/sample" passHref>
             <a className={brandUnderlineClasses}>example</a>
           </Link>
           {')'} on how to properly implement the Merkle root in your project –
