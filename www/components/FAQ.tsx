@@ -11,14 +11,14 @@ export default function FAQ() {
           1. A Merkle root generator: just paste the addresses you want to
           allow, and we generate and return your root instantly
           <br />
-          2. A step-by-step guide{' ( '}
+          2. A step-by-step guide{' ('}
           <Link
             href="/tree/0x9bcb34c8aba34a442d549dc3ae29995d5d1646440b80329ba55f6978a5bf23ce"
             passHref
           >
             <a className={brandUnderlineClasses}>example</a>
           </Link>
-          {' )'} on how to properly implement the Merkle root in your project –
+          {')'} on how to properly implement the Merkle root in your project –
           with free support via Discord if you need it
           <br />
           3. A mechanism to ensure your allowlist works across web3

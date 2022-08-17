@@ -18,7 +18,7 @@ export default function Docs() {
             passHref
           >
             <a className={brandUnderlineClasses}>
-              Here’s a guide with our example root.
+              Here’s a guide with our sample root.
             </a>
           </Link>
         </p>
