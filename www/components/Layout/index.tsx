@@ -11,7 +11,11 @@ type Props = {
 export default function Layout({ children }: Props) {
   return (
     <div className="flex flex-col items-center overflow-x-hidden pb-20">
-      <MetaTags description={siteDescription} imageUrl="/meta-image.png" />
+      <MetaTags
+        description={siteDescription}
+        // og:image spec requires full url, can't use path for image
+        imageUrl="https://lanyard.build/meta-image.png"
+      />
       <Head />
 
       <div className="w-full max-w-screen-lg px-3 sm:px-8 pb-8">
