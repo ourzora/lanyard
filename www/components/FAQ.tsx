@@ -14,12 +14,12 @@ export default function FAQ() {
               allow, and we generate and return your root instantly
             </li>
             <li className="pl-1">
-              A step-by-step guide{' ('}
+              A{' '}
               <Link href="/tree/sample" passHref>
-                <a className={brandUnderlineClasses}>example</a>
-              </Link>
-              {')'} on how to properly implement the Merkle root in your project
-              – with free support via Discord if you need it
+                <a className={brandUnderlineClasses}>step-by-step guide</a>
+              </Link>{' '}
+              on how to properly implement the Merkle root in your project –
+              with free support via Discord if you need it
             </li>
             <li className="pl-1">
               A mechanism to ensure your allowlist works across web3
