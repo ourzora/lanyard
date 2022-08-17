@@ -36,11 +36,6 @@ jobs:
         id: build
         working-directory: ./contracts
 
-      - name: Run Forge snapshot
-        run: forge snapshot --check
-        id: snapshot
-        working-directory: ./contracts
-
       - name: Run tests
         run: forge test
         id: test
