@@ -48,9 +48,9 @@ export default function FAQ() {
           What do you mean when you say my allowlist will work across web3?
         </Question>
         <Answer>
-          Lanyard securely stores your allowlist and Merkle root so that your
-          community can mint your project from their preferred interface – your
-          website,{' '}
+          Lanyard securely stores your allowlist, Merkle root, and proofs so
+          that your community can mint your project from their preferred
+          interface – your website,{' '}
           <a
             href="https://mint.fun"
             target="_blank"
