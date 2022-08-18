@@ -9,7 +9,7 @@ import (
 	"runtime/debug"
 
 	"github.com/contextwtf/lanyard/api"
-	"github.com/contextwtf/lanyard/api/db/migrations"
+	"github.com/contextwtf/lanyard/api/migrations"
 	"github.com/contextwtf/lanyard/migrate"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
