@@ -72,9 +72,9 @@ func main() {
 		dbc.ConnConfig.Logger = tracing.NewDBTracer(
 			dbc.ConnConfig.Host,
 		)
+		dbc.ConnConfig.LogLevel = pgx.LogLevelTrace
 	}
 
-	dbc.ConnConfig.LogLevel = pgx.LogLevelTrace
 	dbc.MaxConns = 20
 	db, err := pgxpool.ConnectConfig(ctx, dbc)
 	check(err)
