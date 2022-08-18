@@ -41,6 +41,9 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 			proofs->'proof'
 		FROM tree
 		WHERE (
+			--eth addresses contain mixed casing to
+			--accommodate checksums. we sidestep
+			--the casing issues for user queries
 			lower(proofs->>'addr') = lower($2)
 			OR lower(proofs->>'leaf') = lower($3)
 		)
