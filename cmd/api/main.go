@@ -11,6 +11,7 @@ import (
 
 	"github.com/contextwtf/lanyard/api"
 	"github.com/contextwtf/lanyard/api/migrations"
+	"github.com/contextwtf/lanyard/api/tracing"
 	"github.com/contextwtf/lanyard/migrate"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -38,6 +39,17 @@ func main() {
 		env = "dev"
 	}
 
+	ddAgent := os.Getenv("DD_AGENT_HOST")
+	if ddAgent != "" {
+		t := opentracer.New(
+			tracer.WithEnv(os.Getenv("DD_ENV")),
+			tracer.WithService(os.Getenv("DD_SERVICE")),
+			tracer.WithServiceVersion(GitSha),
+			tracer.WithAgentAddr(net.JoinHostPort(ddAgent, "8126")),
+		)
+		opentracing.SetGlobalTracer(t)
+	}
+
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if env == "dev" {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -54,6 +66,14 @@ func main() {
 	}
 	dbc, err := pgxpool.ParseConfig(dburl)
 	check(err)
+
+	if ddAgent != "" {
+		// trace db queries if tracing is enabled
+		dbc.ConnConfig.Logger = tracing.NewDBTracer(
+			dbc.ConnConfig.Host,
+		)
+	}
+
 	dbc.ConnConfig.LogLevel = pgx.LogLevelTrace
 	dbc.MaxConns = 20
 	db, err := pgxpool.ConnectConfig(ctx, dbc)
@@ -69,17 +89,6 @@ func main() {
 	check(mdb.Close())
 
 	s := api.New(db)
-
-	ddAgent := os.Getenv("DD_AGENT_HOST")
-	if ddAgent != "" {
-		t := opentracer.New(
-			tracer.WithEnv(os.Getenv("DD_ENV")),
-			tracer.WithService(os.Getenv("DD_SERVICE")),
-			tracer.WithServiceVersion(GitSha),
-			tracer.WithAgentAddr(net.JoinHostPort(ddAgent, "8126")),
-		)
-		opentracing.SetGlobalTracer(t)
-	}
 
 	const defaultListen = ":8080"
 	listen := os.Getenv("LISTEN")
