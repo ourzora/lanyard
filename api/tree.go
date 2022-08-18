@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/contextwtf/lanyard/api/db/queries"
 	"github.com/contextwtf/lanyard/merkle"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -117,8 +116,11 @@ type createTreeResp struct {
 }
 
 func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
+	var (
+		req createTreeReq
+		ctx = r.Context()
+	)
 	defer r.Body.Close()
-	var req createTreeReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.sendJSONError(r, w, err, http.StatusBadRequest, "unhashedLeaves must be a list of hex strings")
 		return
@@ -132,69 +134,69 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx, err := s.db.Begin(r.Context())
-	defer tx.Rollback(r.Context())
+	dbtx, err := s.db.Begin(ctx)
+	defer dbtx.Rollback(ctx)
 	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to start transaction")
 		return
 	}
-
-	q := s.dbq.WithTx(tx)
 
 	var leaves [][]byte
 	for i := range req.Leaves {
 		leaves = append(leaves, req.Leaves[i])
 	}
 	tree := merkle.New(leaves)
-	err = q.InsertTree(r.Context(), queries.InsertTreeParams{
-		Root:           tree.Root(),
-		UnhashedLeaves: leaves,
-		Ltd:            req.Ltd,
-		Packed:         req.Packed.NullBool,
-	})
+	const q1 = `
+		INSERT INTO merkle_trees (root, unhashed_leaves, ltd, packed)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (root)
+		DO NOTHING
+	`
+	_, err = dbtx.Exec(ctx, q1, tree.Root(), leaves, req.Ltd, req.Packed)
 	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to insert merkle tree")
 		return
 	}
 
-	rows := make([]queries.InsertProofParams, 0, len(leaves))
-
+	var batch = &pgx.Batch{}
 	for _, leaf := range leaves {
 		proof := tree.Proof(leaf)
 		if len(proof) == 0 {
 			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Must provide addresses that result in a proof")
 			return
 		}
-
-		rows = append(rows, queries.InsertProofParams{
-			Root:         tree.Root(),
-			UnhashedLeaf: leaf,
-			Address:      leaf2AddrBytes(leaf, req.Ltd, req.Packed.Bool),
-			Proof:        proof,
-		})
+		const q2 = `
+			INSERT INTO merkle_proofs (root, unhashed_leaf, address, proof)
+			VALUES ($1, $2, $3, $4)
+			ON CONFLICT (root, unhashed_leaf)
+			DO NOTHING;
+		`
+		batch.Queue(q2,
+			tree.Root(),
+			leaf,
+			leaf2AddrBytes(leaf, req.Ltd, req.Packed.Bool),
+			proof,
+		)
 	}
-
-	br := q.InsertProof(r.Context(), rows)
-
-	var batchErr error
-	br.Exec(func(i int, err error) {
+	br := dbtx.SendBatch(ctx, batch)
+	for i := 0; i < len(leaves); i++ {
+		_, err := br.Exec()
 		if err != nil {
-			batchErr = err
+			s.sendJSONError(r, w, err, http.StatusInternalServerError, "inserting proofs")
 			return
 		}
-	})
-
-	if batchErr != nil {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to persist merkle proofs")
-		return
 	}
-
-	err = tx.Commit(r.Context())
+	err = br.Close()
 	if err != nil {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to persist")
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "inserting proof batch")
 		return
 	}
 
+	err = dbtx.Commit(ctx)
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "committing tx")
+		return
+	}
 	s.sendJSON(r, w, createTreeResp{
 		MerkleRoot: fmt.Sprintf("0x%s", hex.EncodeToString(tree.Root())),
 	})
@@ -208,30 +210,35 @@ type getTreeResp struct {
 }
 
 func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
-	root := r.URL.Query().Get("root")
+	var (
+		ctx  = r.Context()
+		root = r.URL.Query().Get("root")
+	)
 	if root == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
-	row, err := s.dbq.SelectTree(r.Context(), common.FromHex(root))
+	const q = `
+		SELECT unhashed_leaves, ltd, packed
+		FROM merkle_trees
+		WHERE root = $1
+	`
+	tr := getTreeResp{}
+	err := s.db.QueryRow(ctx, q, common.FromHex(root)).Scan(
+		&tr.UnhashedLeaves,
+		&tr.Ltd,
+		&tr.Packed,
+	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, err, http.StatusNotFound, "tree not found for root")
 		return
 	} else if err != nil {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "Failed to select tree")
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting tree")
 		return
 	}
 
-	w.Header().Set("Cache-Control", "public, max-age=3600")
+	tr.LeafCount = len(tr.UnhashedLeaves)
 
-	var l []hexutil.Bytes
-	for i := range row.UnhashedLeaves {
-		l = append(l, row.UnhashedLeaves[i])
-	}
-	s.sendJSON(r, w, getTreeResp{
-		UnhashedLeaves: l,
-		LeafCount:      len(row.UnhashedLeaves),
-		Ltd:            row.Ltd,
-		Packed:         jsonNullBool{row.Packed},
-	})
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	s.sendJSON(r, w, tr)
 }

@@ -5,7 +5,6 @@ go 1.19
 require (
 	blake.io/pqx v0.0.0-20220606000416-b72a6fb40461
 	github.com/ethereum/go-ethereum v1.10.21
-	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/lib/pq v1.10.5
 	github.com/rs/cors v1.8.2
@@ -29,6 +28,7 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.0 // indirect

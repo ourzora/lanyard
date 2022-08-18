@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/contextwtf/lanyard/api/db/queries"
-
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
@@ -17,14 +15,12 @@ import (
 )
 
 type Server struct {
-	db  *pgxpool.Pool
-	dbq *queries.Queries
+	db *pgxpool.Pool
 }
 
 func New(db *pgxpool.Pool) *Server {
 	return &Server{
-		db:  db,
-		dbq: queries.New(db),
+		db: db,
 	}
 }
 
