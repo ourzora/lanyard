@@ -16,15 +16,6 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 
-CREATE TABLE public.merkle_proofs (
-    root bytea NOT NULL,
-    address bytea,
-    proof bytea[] NOT NULL,
-    unhashed_leaf bytea NOT NULL
-);
-
-
-
 CREATE TABLE public.merkle_trees (
     root bytea NOT NULL,
     unhashed_leaves bytea[] NOT NULL,
@@ -60,10 +51,6 @@ ALTER TABLE ONLY public.merkle_trees
 
 ALTER TABLE ONLY public.migrations
     ADD CONSTRAINT migrations_pkey PRIMARY KEY (filename);
-
-
-
-CREATE UNIQUE INDEX merkle_proofs_root_unhashed_leaf_idx ON public.merkle_proofs USING btree (root, unhashed_leaf);
 
 
 

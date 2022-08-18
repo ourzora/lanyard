@@ -49,4 +49,10 @@ var Migrations = []migrate.Migration{
 			ADD COLUMN proofs jsonb;
 		`,
 	},
+	{
+		Name: "2022-08-18.0.drop-proofs.sql",
+		SQL: `
+			DROP TABLE merkle_proofs;
+		`,
+	},
 }
