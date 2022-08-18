@@ -10,7 +10,7 @@ import (
 )
 
 type getProofResp struct {
-	UnhashedLeaf string          `json:"unhashedLeaf"`
+	UnhashedLeaf hexutil.Bytes   `json:"unhashedLeaf"`
 	Proof        []hexutil.Bytes `json:"proof"`
 }
 
@@ -48,7 +48,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 
 	resp := &getProofResp{}
 	if leaf != "" {
-		resp.UnhashedLeaf = leaf
+		resp.UnhashedLeaf = common.FromHex(leaf)
 		const q2 = `
 			SELECT proof
 			FROM merkle_proofs
