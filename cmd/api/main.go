@@ -4,18 +4,23 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"runtime/debug"
 
 	"github.com/contextwtf/lanyard/api"
 	"github.com/contextwtf/lanyard/api/migrations"
+	"github.com/contextwtf/lanyard/api/tracing"
 	"github.com/contextwtf/lanyard/migrate"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/opentracing/opentracing-go"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 var GitSha string
@@ -34,6 +39,17 @@ func main() {
 		env = "dev"
 	}
 
+	ddAgent := os.Getenv("DD_AGENT_HOST")
+	if ddAgent != "" {
+		t := opentracer.New(
+			tracer.WithEnv(os.Getenv("DD_ENV")),
+			tracer.WithService(os.Getenv("DD_SERVICE")),
+			tracer.WithServiceVersion(GitSha),
+			tracer.WithAgentAddr(net.JoinHostPort(ddAgent, "8126")),
+		)
+		opentracing.SetGlobalTracer(t)
+	}
+
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if env == "dev" {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -50,7 +66,15 @@ func main() {
 	}
 	dbc, err := pgxpool.ParseConfig(dburl)
 	check(err)
-	dbc.ConnConfig.LogLevel = pgx.LogLevelTrace
+
+	if ddAgent != "" {
+		// trace db queries if tracing is enabled
+		dbc.ConnConfig.Logger = tracing.NewDBTracer(
+			dbc.ConnConfig.Host,
+		)
+		dbc.ConnConfig.LogLevel = pgx.LogLevelTrace
+	}
+
 	dbc.MaxConns = 20
 	db, err := pgxpool.ConnectConfig(ctx, dbc)
 	check(err)

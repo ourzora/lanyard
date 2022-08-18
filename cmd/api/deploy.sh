@@ -14,4 +14,9 @@ go run github.com/tailscale/mkctr@latest \
   --push \
 /usr/local/bin/api
 
-flyctl deploy --detach -i registry.fly.io/al-prod:latest -a al-prod
+flyctl deploy --detach \
+	-i registry.fly.io/al-prod:latest \
+	-a al-prod \
+	-e "DD_ENV=production" \
+	-e "DD_SERVICE=al-prod" \
+	-e "DD_AGENT_HOST=datadog-agent.internal"

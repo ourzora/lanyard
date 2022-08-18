@@ -7,6 +7,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.21
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/lib/pq v1.10.5
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/rs/cors v1.8.2
 	github.com/rs/zerolog v1.27.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c

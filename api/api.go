@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/contextwtf/lanyard/api/tracing"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 type Server struct {
@@ -64,7 +65,8 @@ func versionHandler(h http.Handler, sha string) http.Handler {
 
 func tracingHandler(env, sha string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		span, ctx := tracer.StartSpanFromContext(r.Context(), fmt.Sprintf("req.%s", r.URL.Path))
+		span, ctx := tracing.SpanFromContext(r.Context(), "http.request")
+
 		defer span.Finish()
 
 		log := zerolog.Ctx(r.Context())
