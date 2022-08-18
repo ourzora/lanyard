@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/contextwtf/lanyard/api/tracing"
 
@@ -35,7 +36,7 @@ func (s *Server) Handler(env, gitSha string) http.Handler {
 
 	h := http.Handler(mux)
 	h = versionHandler(h, gitSha)
-	h = tracingHandler(env, gitSha, h)
+	h = tracingHandler(os.Getenv("DD_ENV"), os.Getenv("DD_SERVICE"), gitSha, h)
 	h = hlog.NewHandler(log.Logger)(h)
 	h = hlog.UserAgentHandler("user_agent")(h)
 	h = hlog.RefererHandler("referer")(h)
@@ -63,7 +64,7 @@ func versionHandler(h http.Handler, sha string) http.Handler {
 	})
 }
 
-func tracingHandler(env, sha string, h http.Handler) http.Handler {
+func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		span, ctx := tracing.SpanFromContext(r.Context(), "http.request")
 
@@ -74,8 +75,7 @@ func tracingHandler(env, sha string, h http.Handler) http.Handler {
 			return c.Uint64("dd.trace_id", span.Context().TraceID())
 		})
 		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			const serviceName = "allow-list-api"
-			return c.Str("dd.service", serviceName)
+			return c.Str("dd.service", service)
 		})
 		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
 			return c.Str("dd.env", env)
