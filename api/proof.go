@@ -16,13 +16,12 @@ type getProofResp struct {
 
 func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	var (
-		ctx     = r.Context()
-		rootStr = r.URL.Query().Get("root")
-		root    = common.FromHex(rootStr)
-		leaf    = r.URL.Query().Get("unhashedLeaf")
-		addr    = r.URL.Query().Get("address")
+		ctx  = r.Context()
+		root = common.FromHex(r.URL.Query().Get("root"))
+		leaf = r.URL.Query().Get("unhashedLeaf")
+		addr = r.URL.Query().Get("address")
 	)
-	if rootStr == "" {
+	if len(root) == 0 {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
@@ -31,52 +30,35 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const q1 = `
-		SELECT 1
-		FROM merkle_trees
-		WHERE root = $1;
+	const q = `
+		WITH tree AS (
+			SELECT jsonb_array_elements(proofs) proofs
+			FROM merkle_trees
+			WHERE root = $1
+		)
+		SELECT
+			proofs->'leaf',
+			proofs->'proof'
+		FROM tree
+		WHERE (
+			--eth addresses contain mixed casing to
+			--accommodate checksums. we sidestep
+			--the casing issues for user queries
+			lower(proofs->>'addr') = lower($2)
+			OR lower(proofs->>'leaf') = lower($3)
+		)
 	`
-	var empty int
-	err := s.db.QueryRow(ctx, q1, root).Scan(&empty)
+	var (
+		resp = &getProofResp{}
+		row  = s.db.QueryRow(ctx, q, root, addr, leaf)
+		err  = row.Scan(&resp.UnhashedLeaf, &resp.Proof)
+	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, nil, http.StatusNotFound, "tree not found")
 		return
 	} else if err != nil {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "failed to check tree exists")
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting proof")
 		return
-	}
-
-	resp := &getProofResp{}
-	if leaf != "" {
-		resp.UnhashedLeaf = common.FromHex(leaf)
-		const q2 = `
-			SELECT proof
-			FROM merkle_proofs
-			WHERE root = $1
-			AND unhashed_leaf = $2
-		`
-		row := s.db.QueryRow(ctx, q2, root, common.FromHex(leaf))
-		err = row.Scan(&resp.Proof)
-		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-			s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting proof for unhashedLeaf")
-			return
-		}
-	} else {
-		// since this isn't guaranteed to be unique,
-		// we take the first proof available
-		const q3 = `
-			SELECT proof, unhashed_leaf
-			FROM merkle_proofs
-			WHERE root = $1
-			AND address = $2
-			LIMIT 1
-		`
-		row := s.db.QueryRow(ctx, q3, root, common.HexToAddress(addr).Bytes())
-		err = row.Scan(&resp.Proof, &resp.UnhashedLeaf)
-		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-			s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting proof for address")
-			return
-		}
 	}
 
 	// cache for 1 year if we're returning an unhashed leaf proof

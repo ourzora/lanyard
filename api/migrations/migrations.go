@@ -42,4 +42,11 @@ var Migrations = []migrate.Migration{
 			CREATE UNIQUE INDEX on merkle_proofs(root, unhashed_leaf);
 		`,
 	},
+	{
+		Name: "2022-08-17.0.proofs.sql",
+		SQL: `
+			ALTER TABLE merkle_trees
+			ADD COLUMN proofs jsonb;
+		`,
+	},
 }
