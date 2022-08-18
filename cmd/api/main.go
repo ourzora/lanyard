@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"runtime/debug"
@@ -14,8 +15,11 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/opentracing/opentracing-go"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 var GitSha string
@@ -65,6 +69,17 @@ func main() {
 	check(mdb.Close())
 
 	s := api.New(db)
+
+	ddAgent := os.Getenv("DD_AGENT_HOST")
+	if ddAgent != "" {
+		t := opentracer.New(
+			tracer.WithEnv(os.Getenv("DD_ENV")),
+			tracer.WithService(os.Getenv("DD_SERVICE")),
+			tracer.WithServiceVersion(GitSha),
+			tracer.WithAgentAddr(net.JoinHostPort(ddAgent, "8126")),
+		)
+		opentracing.SetGlobalTracer(t)
+	}
 
 	const defaultListen = ":8080"
 	listen := os.Getenv("LISTEN")
