@@ -90,8 +90,6 @@ func main() {
 
 	s := api.New(db)
 
-	check(api.MigrateProofs(ctx, db))
-
 	const defaultListen = ":8080"
 	listen := os.Getenv("LISTEN")
 	if listen == "" {

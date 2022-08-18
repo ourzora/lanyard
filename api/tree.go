@@ -1,8 +1,6 @@
 package api
 
 import (
-	"bytes"
-	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -13,89 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/rs/zerolog/log"
 )
-
-//TODO(ryan): remove this once the table has been updated
-func MigrateProofs(ctx context.Context, db *pgxpool.Pool) error {
-	const q1 = `
-		select root, unhashed_leaves, ltd, packed
-		from merkle_trees
-		where proofs is null
-	`
-	rows, err := db.Query(ctx, q1)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	//for the updates
-	tx, err := db.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx) //noop for successful commit
-
-	var migrated int
-	for rows.Next() {
-		var (
-			tree   merkle.Tree
-			root   []byte
-			leaves [][]byte
-			ltd    []string
-			packed sql.NullBool
-		)
-		err = rows.Scan(&root, &leaves, &ltd, &packed)
-		if err != nil {
-			return err
-		}
-		tree = merkle.New(leaves)
-		if !bytes.Equal(root, tree.Root()) {
-			return errors.New("mismatched root")
-		}
-
-		type proofItem struct {
-			Leaf  string   `json:"leaf"`
-			Addr  string   `json:"addr"`
-			Proof []string `json:"proof"`
-		}
-		var proofs = []proofItem{}
-		for _, l := range leaves {
-			pf := tree.Proof(l)
-			if !merkle.Valid(tree.Root(), pf, l) {
-				return errors.New("invalid proof")
-			}
-			proofs = append(proofs, proofItem{
-				Leaf:  hexutil.Encode(l),
-				Addr:  leaf2Addr(l, ltd, packed.Bool).Hex(),
-				Proof: encodeProof(pf),
-			})
-		}
-
-		const q2 = `
-			update merkle_trees
-			set proofs = $1
-			where root = $2
-		`
-		_, err = tx.Exec(ctx, q2, proofs, root)
-		if err != nil {
-			return err
-		}
-		migrated++
-	}
-	if rows.Err() != nil {
-		return rows.Err()
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return err
-	}
-
-	log.Ctx(ctx).Info().Int("migrated", migrated).Msg("success")
-	return nil
-}
 
 func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
