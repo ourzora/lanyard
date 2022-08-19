@@ -33,7 +33,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	const q = `
 		WITH tree AS (
 			SELECT jsonb_array_elements(proofs) proofs
-			FROM merkle_trees
+			FROM trees
 			WHERE root = $1
 		)
 		SELECT

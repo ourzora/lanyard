@@ -11,20 +11,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
-
-CREATE TABLE public.merkle_trees (
-    root bytea NOT NULL,
-    unhashed_leaves bytea[] NOT NULL,
-    ltd text[],
-    packed boolean,
-    proofs jsonb
-);
-
-
 
 CREATE SEQUENCE public.migration_seq
     START WITH 1
@@ -33,6 +19,10 @@ CREATE SEQUENCE public.migration_seq
     NO MAXVALUE
     CACHE 1;
 
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 
 CREATE TABLE public.migrations (
@@ -44,7 +34,17 @@ CREATE TABLE public.migrations (
 
 
 
-ALTER TABLE ONLY public.merkle_trees
+CREATE TABLE public.trees (
+    root bytea NOT NULL,
+    unhashed_leaves bytea[] NOT NULL,
+    ltd text[],
+    packed boolean,
+    proofs jsonb
+);
+
+
+
+ALTER TABLE ONLY public.trees
     ADD CONSTRAINT merkle_trees_pkey PRIMARY KEY (root);
 
 
