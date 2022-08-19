@@ -55,4 +55,10 @@ var Migrations = []migrate.Migration{
 			DROP TABLE merkle_proofs;
 		`,
 	},
+	{
+		Name: "2022-08-18.1.rename-trees.sql",
+		SQL: `
+			ALTER TABLE merkle_trees RENAME TO trees;
+		`,
+	},
 }

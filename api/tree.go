@@ -163,7 +163,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	const q = `
-		INSERT INTO merkle_trees(
+		INSERT INTO trees(
 			root,
 			unhashed_leaves,
 			ltd,
@@ -206,7 +206,7 @@ func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
 	}
 	const q = `
 		SELECT unhashed_leaves, ltd, packed
-		FROM merkle_trees
+		FROM trees
 		WHERE root = $1
 	`
 	tr := getTreeResp{}
