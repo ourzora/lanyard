@@ -67,4 +67,11 @@ var Migrations = []migrate.Migration{
 		    CREATE INDEX on trees USING gin(proofs jsonb_path_ops);
 		`,
 	},
+	{
+		Name: "2022-08-22.1.add-inserted-at.sql",
+		SQL: `
+		ALTER TABLE trees 
+		ADD COLUMN "inserted_at" timestamptz NOT NULL DEFAULT now();
+		`,
+	},
 }
