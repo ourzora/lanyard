@@ -68,7 +68,7 @@ var Migrations = []migrate.Migration{
 		`,
 	},
 	{
-		Name: "2022-08-22.0.add-inserted-at.sql",
+		Name: "2022-08-22.1.add-inserted-at.sql",
 		SQL: `
 		ALTER TABLE trees 
 		ADD COLUMN "inserted_at" timestamptz NOT NULL DEFAULT now();
