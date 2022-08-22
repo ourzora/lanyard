@@ -80,6 +80,12 @@ const getProofForIndexedAddress = async (
   return await proofRes.json()
 }
 
+const getRootFromProof = async (proof: string[]): Promise<string> => {
+  const rootRes = await fetch(`${baseUrl}/api/v1/root?proof=${proof.join(',')}`)
+  const resp = await rootRes.json()
+  return resp.root
+}
+
 const encode = utils.defaultAbiCoder.encode.bind(utils.defaultAbiCoder)
 const encodePacked = utils.solidityPack
 
@@ -236,3 +242,7 @@ checkProofEquality(
     utils.keccak256(encodedPackedLeafData[0]),
   ),
 )
+
+const root = await getRootFromProof(encodedPackedProof)
+console.log('root from proof', root)
+checkRootEquality(root, encodedPackedMerkleRoot)

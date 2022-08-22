@@ -61,4 +61,10 @@ var Migrations = []migrate.Migration{
 			ALTER TABLE merkle_trees RENAME TO trees;
 		`,
 	},
+	{
+		Name: "2022-08-22.0.add-proof-idx.sql",
+		SQL: `
+		    CREATE INDEX on trees USING gin(proofs jsonb_path_ops);
+		`,
+	},
 }

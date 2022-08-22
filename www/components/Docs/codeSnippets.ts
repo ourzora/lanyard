@@ -49,3 +49,13 @@ GET https://lanyard.build/api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
   "unhashedLeaf": "0x0000000000000000000000000000000000000003" // or null if not in the tree
 }
 `.trim()
+
+export const rootCode = `
+// proof is 0x prefixed, comma separated values
+GET https://lanyard.build/api/v1/root?proof={proof}
+
+// Response body
+{
+  "root": "0x0000000000000000000000000000000000000003" // returns error if not found
+}
+`.trim()
