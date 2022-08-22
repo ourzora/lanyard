@@ -77,12 +77,16 @@ func (t Tree) Root() []byte {
 // Returns a list of hashes such that
 // cumulatively hashing the list pairwise
 // will yield the root hash of the tree. Example:
-//  [abcd]
-//  [ab, cd]
-//  [a, b, c, d]
+//  [abcde]
+//  [abcd, e]
+//  [ab, cd, e]
+//  [a, b, c, d, e]
 //
-// If the target is 'c' we will
-// need to return [d, ab]
+// If the target is 'c' Proof returns:
+// [d, ab, e]
+//
+// If the target is 'e' Proof returns:
+// [cd]
 //
 // The result of this func will be used in [Valid]
 func (t Tree) Proof(target []byte) [][]byte {
