@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jackc/pgx/v4"
+	"github.com/ryandotsmith/jh"
 )
 
 type getProofResp struct {
@@ -14,20 +16,17 @@ type getProofResp struct {
 	Proof        []hexutil.Bytes `json:"proof"`
 }
 
-func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetProof(ctx context.Context) (*getProofResp, error) {
 	var (
-		ctx  = r.Context()
-		root = common.FromHex(r.URL.Query().Get("root"))
-		leaf = r.URL.Query().Get("unhashedLeaf")
-		addr = r.URL.Query().Get("address")
+		root = common.FromHex(jh.Request(ctx).URL.Query().Get("root"))
+		leaf = jh.Request(ctx).URL.Query().Get("unhashedLeaf")
+		addr = jh.Request(ctx).URL.Query().Get("address")
 	)
 	if len(root) == 0 {
-		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
-		return
+		return nil, apiError(http.StatusBadRequest, "missing root")
 	}
 	if leaf == "" && addr == "" {
-		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing leaf")
-		return
+		return nil, apiError(http.StatusBadRequest, "missing leaf")
 	}
 
 	const q = `
@@ -54,16 +53,14 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		err  = row.Scan(&resp.UnhashedLeaf, &resp.Proof)
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
-		s.sendJSONError(r, w, nil, http.StatusNotFound, "tree not found")
-		return
+		return nil, apiError(http.StatusNotFound, "tree not found")
 	} else if err != nil {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting proof")
-		return
+		return nil, apiError(http.StatusInternalServerError, "selecting proof")
 	}
 
 	// cache for 1 year if we're returning an unhashed leaf proof
 	if leaf != "" {
-		w.Header().Set("Cache-Control", "public, max-age=31536000")
+		jh.ResponseWriter(ctx).Header().Set("Cache-Control", "public, max-age=31536000")
 	}
-	s.sendJSON(r, w, resp)
+	return resp, nil
 }

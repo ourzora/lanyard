@@ -10,6 +10,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/rs/cors v1.8.2
 	github.com/rs/zerolog v1.27.0
+	github.com/ryandotsmith/jh v0.0.0-20220822012630-597b758f45fc
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df
 	gopkg.in/DataDog/dd-trace-go.v1 v1.40.1

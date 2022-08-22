@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
+	"github.com/ryandotsmith/jh"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
 )
 
@@ -26,10 +26,33 @@ func New(db *pgxpool.Pool) *Server {
 	}
 }
 
+func jsonHandler(f any) http.Handler {
+	h, err := jh.Handler(f, jh.ErrHandler)
+	if err != nil {
+		panic(fmt.Sprintf("setting up handler: %s", err))
+	}
+	return h
+}
+
+func apiError(c int, m string) error {
+	return jh.Error{Code: c, Message: m}
+}
+
+func (s *Server) treeHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			jsonHandler(s.CreateTree).ServeHTTP(w, r)
+		case http.MethodGet:
+			jsonHandler(s.GetTree).ServeHTTP(w, r)
+		}
+	})
+}
+
 func (s *Server) Handler(env, gitSha string) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/v1/tree", s.TreeHandler)
-	mux.HandleFunc("/api/v1/proof", s.GetProof)
+	mux.Handle("/api/v1/tree", s.treeHandler())
+	mux.Handle("/api/v1/proof", jsonHandler(s.GetProof))
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, gitSha)
 	})
@@ -111,35 +134,4 @@ func (s *statusCapture) Write(b []byte) (int, error) {
 		s.WriteHeader(http.StatusOK)
 	}
 	return s.ResponseWriter.Write(b)
-}
-
-func (s *Server) sendJSON(r *http.Request, w http.ResponseWriter, response any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
-}
-
-func (s *Server) sendJSONError(
-	r *http.Request,
-	w http.ResponseWriter,
-	err error,
-	code int,
-	customMessage string,
-) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-
-	if err != nil {
-		log.Ctx(r.Context()).Err(err).Send()
-	}
-
-	message := http.StatusText(code)
-	if customMessage != "" {
-		message = customMessage
-	}
-
-	json.NewEncoder(w).Encode(map[string]any{
-		"error":   true,
-		"message": message,
-	})
 }

@@ -557,6 +557,10 @@ github.com/rs/zerolog v1.13.0/go.mod h1:YbFCdg8HfsridGWAh22vktObvhZbQsZXe4/zB0OK
 github.com/rs/zerolog v1.15.0/go.mod h1:xYTKnLHcpfU2225ny5qZjxnj9NvkumZYjJHlAThCjNc=
 github.com/rs/zerolog v1.27.0 h1:1T7qCieN22GVc8S4Q2yuexzBb1EqjbgjSH9RohbMjKs=
 github.com/rs/zerolog v1.27.0/go.mod h1:7frBqO0oezxmnO7GF86FY++uy8I0Tk/If5ni1G9Qc0U=
+github.com/ryandotsmith/jh v0.0.0-20220821225828-c91469a4dcf0 h1:kxTB6A3cDP0BhsISkVBAE4eai1UJs/jMEW0gVmlZW5g=
+github.com/ryandotsmith/jh v0.0.0-20220821225828-c91469a4dcf0/go.mod h1:5Tt8x5Cm2mrrRYbbxMlSldKB45tdpYqO6qQ/qFycaB4=
+github.com/ryandotsmith/jh v0.0.0-20220822012630-597b758f45fc h1:MqNdhjQEwVp8echRsZ3yJkyG4TZHijjtY9WEZH3AalY=
+github.com/ryandotsmith/jh v0.0.0-20220822012630-597b758f45fc/go.mod h1:5Tt8x5Cm2mrrRYbbxMlSldKB45tdpYqO6qQ/qFycaB4=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
 github.com/ryanuber/columnize v2.1.0+incompatible/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
 github.com/ryanuber/go-glob v1.0.0/go.mod h1:807d1WSdnB0XRJzKNil9Om6lcp/3a0v4qIHxIXzX/Yc=

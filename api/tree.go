@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -11,21 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jackc/pgx/v4"
+	"github.com/ryandotsmith/jh"
 )
-
-func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		s.CreateTree(w, r)
-		return
-	case http.MethodGet:
-		s.GetTree(w, r)
-		return
-	default:
-		http.Error(w, "unsupported method", http.StatusMethodNotAllowed)
-		return
-	}
-}
 
 func leaf2Addr(leaf []byte, ltd []string, packed bool) common.Address {
 	if len(ltd) == 0 || (len(ltd) == 1 && ltd[0] == "address") {
@@ -118,23 +106,12 @@ type createTreeResp struct {
 	MerkleRoot string `json:"merkleRoot"`
 }
 
-func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
-	var (
-		req createTreeReq
-		ctx = r.Context()
-	)
-	defer r.Body.Close()
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		s.sendJSONError(r, w, err, http.StatusBadRequest, "unhashedLeaves must be a list of hex strings")
-		return
-	}
-	switch len(req.Leaves) {
-	case 0:
-		s.sendJSONError(r, w, nil, http.StatusBadRequest, "No leaves provided")
-		return
-	case 1:
-		s.sendJSONError(r, w, nil, http.StatusBadRequest, "You must provide at least two values")
-		return
+func (s *Server) CreateTree(
+	ctx context.Context,
+	req createTreeReq,
+) (*createTreeResp, error) {
+	if len(req.Leaves) == 1 {
+		return nil, apiError(http.StatusBadRequest, "Must provide at least 2 leaves")
 	}
 
 	//convert []hexutil.Bytes to [][]byte
@@ -153,8 +130,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 	for _, l := range req.Leaves {
 		pf := tree.Proof(l)
 		if !merkle.Valid(tree.Root(), pf, l) {
-			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Unable to generate proof for tree")
-			return
+			return nil, apiError(http.StatusBadRequest, "generating proof for tree")
 		}
 		proofs = append(proofs, proofItem{
 			Leaf:  hexutil.Encode(l),
@@ -181,11 +157,10 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		proofs,
 	)
 	if err != nil {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "inserting tree")
-		return
+		return nil, apiError(http.StatusInternalServerError, "inserting tree")
 	}
 
-	s.sendJSON(r, w, createTreeResp{hexutil.Encode(tree.Root())})
+	return &createTreeResp{hexutil.Encode(tree.Root())}, nil
 }
 
 type getTreeResp struct {
@@ -195,36 +170,29 @@ type getTreeResp struct {
 	Packed         jsonNullBool    `json:"packedEncoding"`
 }
 
-func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
-	var (
-		ctx  = r.Context()
-		root = r.URL.Query().Get("root")
-	)
+func (s *Server) GetTree(ctx context.Context) (*getTreeResp, error) {
+	root := jh.Request(ctx).URL.Query().Get("root")
 	if root == "" {
-		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
-		return
+		return nil, apiError(http.StatusBadRequest, "missing root")
 	}
 	const q = `
 		SELECT unhashed_leaves, ltd, packed
 		FROM trees
 		WHERE root = $1
 	`
-	tr := getTreeResp{}
+	tr := &getTreeResp{}
 	err := s.db.QueryRow(ctx, q, common.FromHex(root)).Scan(
 		&tr.UnhashedLeaves,
 		&tr.Ltd,
 		&tr.Packed,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
-		s.sendJSONError(r, w, err, http.StatusNotFound, "tree not found for root")
-		return
+		return nil, apiError(http.StatusNotFound, "no tree found for root")
 	} else if err != nil {
-		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting tree")
-		return
+		return nil, apiError(http.StatusInternalServerError, "selecting tree")
 	}
 
 	tr.LeafCount = len(tr.UnhashedLeaves)
-
-	w.Header().Set("Cache-Control", "public, max-age=3600")
-	s.sendJSON(r, w, tr)
+	jh.ResponseWriter(ctx).Header().Set("Cache-Control", "public, max-age=3600")
+	return tr, nil
 }
