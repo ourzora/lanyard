@@ -10,11 +10,11 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-type proofLookup struct {
-	Proof []string `json:"proof"`
-}
-
 func proofURLToDBQuery(param string) string {
+	type proofLookup struct {
+		Proof []string `json:"proof"`
+	}
+
 	lookup := proofLookup{
 		Proof: strings.Split(param, ","),
 	}
@@ -27,11 +27,11 @@ func proofURLToDBQuery(param string) string {
 	return string(q)
 }
 
-type rootResp struct {
-	Root hexutil.Bytes `json:"root"`
-}
-
 func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
+	type rootResp struct {
+		Root hexutil.Bytes `json:"root"`
+	}
+
 	var (
 		ctx     = r.Context()
 		proof   = r.URL.Query().Get("proof")
@@ -42,7 +42,7 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	q := `
+	const q = `
 		SELECT root
 		FROM trees
 		WHERE proofs @> $1
