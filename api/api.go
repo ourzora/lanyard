@@ -46,7 +46,7 @@ func (s *Server) Handler(env, gitSha string) http.Handler {
 	h = hlog.URLHandler("path")(h)
 	h = tracingHandler(os.Getenv("DD_ENV"), os.Getenv("DD_SERVICE"), gitSha, h)
 	h = RemoteAddrHandler("ip")(h)
-	h = hlog.NewHandler(log.Logger)(h)
+	h = hlog.NewHandler(log.Logger)(h) // needs to be last for log values to correctly be passed to context
 
 	if env == "production" {
 		return h
