@@ -134,13 +134,11 @@ func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 		requestStart := time.Now()
 		h.ServeHTTP(sc, r.WithContext(ctx))
 
-		duration := time.Since(requestStart)
-
 		// log every request
 		log.Info().
 			Str("method", r.Method).
 			Int("status", sc.status).
-			Dur("duration", duration).
+			Dur("duration", time.Since(requestStart)).
 			Msg("")
 
 		span.SetTag(ext.HTTPCode, sc.status)
