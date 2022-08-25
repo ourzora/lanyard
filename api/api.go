@@ -3,8 +3,11 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/contextwtf/lanyard/api/tracing"
 
@@ -37,13 +40,14 @@ func (s *Server) Handler(env, gitSha string) http.Handler {
 
 	h := http.Handler(mux)
 	h = versionHandler(h, gitSha)
-	h = tracingHandler(os.Getenv("DD_ENV"), os.Getenv("DD_SERVICE"), gitSha, h)
-	h = hlog.NewHandler(log.Logger)(h)
 	h = hlog.UserAgentHandler("user_agent")(h)
 	h = hlog.RefererHandler("referer")(h)
 	h = hlog.RequestIDHandler("req_id", "Request-Id")(h)
 	h = hlog.URLHandler("path")(h)
-	h = hlog.RequestHandler("req")(h)
+	h = hlog.MethodHandler("method")(h)
+	h = tracingHandler(os.Getenv("DD_ENV"), os.Getenv("DD_SERVICE"), gitSha, h)
+	h = RemoteAddrHandler("ip")(h)
+	h = hlog.NewHandler(log.Logger)(h) // needs to be last for log values to correctly be passed to context
 
 	if env == "production" {
 		return h
@@ -53,9 +57,46 @@ func (s *Server) Handler(env, gitSha string) http.Handler {
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowCredentials: true,
 	})
+
 	h = c.Handler(h)
 
 	return h
+}
+
+func ipFromRequest(r *http.Request) string {
+	if r.Header.Get("fastly-client-ip") != "" {
+		return r.Header.Get("fastly-client-ip")
+	}
+
+	if r.Header.Get("x-forwarded-for") != "" {
+		group := strings.Split(r.Header.Get("x-forwarded-for"), ", ")
+		if len(group) > 0 {
+			return group[len(group)-1]
+		}
+	}
+
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return host
+	}
+
+	return ""
+}
+
+func RemoteAddrHandler(fieldKey string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ip := ipFromRequest(r)
+			if ip != "" {
+				log := zerolog.Ctx(r.Context())
+				log.UpdateContext(func(c zerolog.Context) zerolog.Context {
+					return c.Str("ip", ip)
+				})
+			}
+
+			next.ServeHTTP(w, r.WithContext(r.Context()))
+		})
+	}
 }
 
 func versionHandler(h http.Handler, sha string) http.Handler {
@@ -70,27 +111,32 @@ func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 		span, ctx := tracing.SpanFromContext(r.Context(), "http.request")
 
 		defer span.Finish()
+		log := zerolog.Ctx(ctx)
 
-		log := zerolog.Ctx(r.Context())
-		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.Uint64("dd.trace_id", span.Context().TraceID())
-		})
-		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.Str("dd.service", service)
-		})
-		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.Str("dd.env", env)
-		})
-		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.Str("dd.version", sha)
-		})
+		if env != "" {
+			log.UpdateContext(func(c zerolog.Context) zerolog.Context {
+				return c.Uint64("dd.trace_id", span.Context().TraceID()).
+					Str("dd.service", service).
+					Str("dd.env", env).
+					Str("dd.version", sha)
+			})
+		}
 
 		span.SetTag(ext.ResourceName, r.URL.Path)
 		span.SetTag(ext.SpanType, ext.SpanTypeWeb)
 		span.SetTag(ext.HTTPMethod, r.Method)
 
 		sc := &statusCapture{ResponseWriter: w}
+
+		requestStart := time.Now()
 		h.ServeHTTP(sc, r.WithContext(ctx))
+
+		// log every request
+		log.Info().
+			Int("status", sc.status).
+			Dur("duration", time.Since(requestStart)).
+			Msg("")
+
 		span.SetTag(ext.HTTPCode, sc.status)
 	})
 }
