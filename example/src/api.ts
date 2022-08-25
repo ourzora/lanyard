@@ -7,7 +7,7 @@ const createTree = async (
   unhashedLeaves: string[],
   leafTypeDescriptor?: string[],
   packedEncoding?: boolean,
-): Promise<{ merkleRoot: string }> => {
+): Promise<{ merkleRoot: string; error?: boolean }> => {
   const encodedTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
     method: 'POST',
     headers: {
@@ -138,6 +138,21 @@ const { merkleRoot: basicMerkleRoot } = await createTree(unhashedLeaves)
 
 console.log('basic merkle root', basicMerkleRoot)
 checkRootEquality(basicMerkleRoot, makeMerkleTree(unhashedLeaves).getHexRoot())
+
+// basic merkle tree
+const duplicateUnhashedLeaves = [
+  '0x0000000000000000000000000000000000000001',
+  '0x0000000000000000000000000000000000000001',
+  '0x0000000000000000000000000000000000000003',
+  '0x0000000000000000000000000000000000000004',
+  '',
+]
+
+const { error } = await createTree(duplicateUnhashedLeaves)
+if (!error) {
+  throw new Error('Expected error when creating tree with duplicate leaves')
+}
+console.log('successfully received error for duplicate leaves')
 
 const basicTree = await getTree(basicMerkleRoot)
 console.log('basic leaf count', basicTree.leafCount)

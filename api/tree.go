@@ -137,11 +137,25 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var (
+		leaves [][]byte
+		// used to check if there are duplicate leaves in request
+		vals map[string]struct{} = map[string]struct{}{}
+	)
+
 	//convert []hexutil.Bytes to [][]byte
-	var leaves [][]byte
 	for i := range req.Leaves {
 		leaves = append(leaves, req.Leaves[i])
+		str := req.Leaves[i].String()
+		_, isDuplicate := vals[str]
+		if isDuplicate {
+			// error, duplicate value
+			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Duplicate value found in tree")
+			return
+		}
+		vals[str] = struct{}{}
 	}
+
 	tree := merkle.New(leaves)
 
 	type proofItem struct {

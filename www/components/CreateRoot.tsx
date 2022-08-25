@@ -35,23 +35,41 @@ export default function CreateRoot() {
     status,
     create,
   } = useCreateMerkleRoot()
+  const [hasDuplicatesErr, setHasDuplicates] = useState(false)
   const [addressInput, addressInputSet] = useState('')
+
+  useEffect(() => {
+    setHasDuplicates(false)
+  }, [addressInput])
 
   const handleSubmit = useCallback(() => {
     if (addressInput.trim().length === 0) {
       return
     }
 
-    const addresses = parseAddressesFromText(addressInput)
+    const { addresses, hasDuplicates } = parseAddressesFromText(
+      addressInput,
+      false,
+    )
+    if (hasDuplicates) {
+      setHasDuplicates(true)
+      return
+    }
+
     create(addresses)
   }, [addressInput, create])
+
+  const removeDuplicates = () => {
+    const { addresses } = parseAddressesFromText(addressInput, true)
+    addressInputSet(addresses.join('\n'))
+  }
 
   const parsedAddresses = useMemo(() => {
     if (addressInput.trim().length === 0) {
       return []
     }
 
-    return parseAddressesFromText(addressInput)
+    return parseAddressesFromText(addressInput).addresses
   }, [addressInput])
 
   const parsedAddressesCount = useMemo(
@@ -121,6 +139,18 @@ export default function CreateRoot() {
       {status === 'success' && errorResponse !== undefined && (
         <div className="text-center sm:text-left w-full">
           Error: {errorResponse.message}
+        </div>
+      )}
+
+      {hasDuplicatesErr && (
+        <div className="text-center text-red-500 sm:text-left w-full">
+          List contains duplicates. Remove duplicates manually or{' '}
+          <button
+            className="cursor-pointer border-b-2 border-red-500"
+            onClick={() => removeDuplicates()}
+          >
+            click here to remove duplicates.
+          </button>
         </div>
       )}
     </div>
