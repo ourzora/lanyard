@@ -150,7 +150,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		_, isDuplicate := vals[str]
 		if isDuplicate {
 			// error, duplicate value
-			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Duplicate value found in tree")
+			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Duplicate value found in unhashedLeaves. Please remove duplicates and re-send.")
 			return
 		}
 		vals[str] = struct{}{}
