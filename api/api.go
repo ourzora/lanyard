@@ -113,18 +113,14 @@ func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 		defer span.Finish()
 		log := zerolog.Ctx(ctx)
 
-		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.Uint64("dd.trace_id", span.Context().TraceID())
-		})
-		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.Str("dd.service", service)
-		})
-		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.Str("dd.env", env)
-		})
-		log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.Str("dd.version", sha)
-		})
+		if env != "" {
+			log.UpdateContext(func(c zerolog.Context) zerolog.Context {
+				return c.Uint64("dd.trace_id", span.Context().TraceID()).
+					Str("dd.service", service).
+					Str("dd.env", env).
+					Str("dd.version", sha)
+			})
+		}
 
 		span.SetTag(ext.ResourceName, r.URL.Path)
 		span.SetTag(ext.SpanType, ext.SpanTypeWeb)
