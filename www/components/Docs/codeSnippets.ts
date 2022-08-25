@@ -1,5 +1,5 @@
 export const createCode = `
-POST https://lanyard.build/api/v1/tree
+POST https://lanyard.org/api/v1/tree
 
 // Request body
 {
@@ -21,7 +21,7 @@ POST https://lanyard.build/api/v1/tree
 `.trim()
 
 export const lookupCode = `
-GET https://lanyard.build/api/v1/tree?root={root}
+GET https://lanyard.org/api/v1/tree?root={root}
 
 // Response body
 {
@@ -38,7 +38,7 @@ GET https://lanyard.build/api/v1/tree?root={root}
 `.trim()
 
 export const proofCode = `
-GET https://lanyard.build/api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
+GET https://lanyard.org/api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
 
 // Response body
 {
@@ -52,7 +52,7 @@ GET https://lanyard.build/api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
 
 export const rootCode = `
 // proof is 0x prefixed, comma separated values
-GET https://lanyard.build/api/v1/root?proof={proof}
+GET https://lanyard.org/api/v1/root?proof={proof}
 
 // Response body
 {
