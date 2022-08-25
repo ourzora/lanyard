@@ -69,7 +69,7 @@ export default function CreateRoot() {
       return []
     }
 
-    return parseAddressesFromText(addressInput).addresses
+    return parseAddressesFromText(addressInput, false).addresses
   }, [addressInput])
 
   const parsedAddressesCount = useMemo(
