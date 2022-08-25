@@ -44,6 +44,7 @@ func (s *Server) Handler(env, gitSha string) http.Handler {
 	h = hlog.RefererHandler("referer")(h)
 	h = hlog.RequestIDHandler("req_id", "Request-Id")(h)
 	h = hlog.URLHandler("path")(h)
+	h = hlog.MethodHandler("method")(h)
 	h = tracingHandler(os.Getenv("DD_ENV"), os.Getenv("DD_SERVICE"), gitSha, h)
 	h = RemoteAddrHandler("ip")(h)
 	h = hlog.NewHandler(log.Logger)(h) // needs to be last for log values to correctly be passed to context
@@ -136,7 +137,6 @@ func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 
 		// log every request
 		log.Info().
-			Str("method", r.Method).
 			Int("status", sc.status).
 			Dur("duration", time.Since(requestStart)).
 			Msg("")
