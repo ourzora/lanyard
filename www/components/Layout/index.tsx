@@ -14,7 +14,7 @@ export default function Layout({ children }: Props) {
       <MetaTags
         description={siteDescription}
         // og:image spec requires full url, can't use path for image
-        imageUrl="https://lanyard.org/meta-image.png"
+        imageUrl="https://lanyard.org/meta-image.png?v=2"
       />
       <Head />
 
