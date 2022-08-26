@@ -1,4 +1,4 @@
-// A merkle tree for [lanyard.build].
+// A merkle tree for [lanyard.org].
 // merkle uses keccak256 hashing for leaves
 // and intermediary nodes and therefore is vulnerable to a
 // second preimage attack. This package does not duplicate or pad leaves in
@@ -7,7 +7,7 @@
 // see the following [bitcoin issue].
 //
 // [bitcoin issue]: https://bitcointalk.org/index.php?topic=102395.0
-// [lanyard.build]: https://lanyard.build
+// [lanyard.org]: https://lanyard.org
 package merkle
 
 import (
