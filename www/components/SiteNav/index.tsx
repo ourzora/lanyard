@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useMemo } from 'react'
+import Logo from 'components/Logo'
 import { twitterUrl, githubUrl } from 'utils/constants'
 import NavTab from './NavTab'
 
@@ -15,7 +16,10 @@ export default function SiteNav() {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between mt-8 mb-16 sm:mb-24 lg:mb-32 gap-4">
       <Link href="/">
-        <a className="font-bold text-3xl">Lanyard</a>
+        <a className="font-bold text-3xl flex items-baseline gap-x-2">
+          <Logo height={23} width={21} />
+          Lanyard
+        </a>
       </Link>
       <div className="flex gap-x-6 h-8 items-center">
         <NavTab
