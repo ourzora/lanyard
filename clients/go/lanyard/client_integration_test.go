@@ -54,7 +54,7 @@ func TestBasicMerkleProof(t *testing.T) {
 
 func TestBasicMerkleProof404(t *testing.T) {
 	_, err := client.GetProofFromLeaf(context.Background(), []byte{0x01}, hexutil.MustDecode("0x0000000000000000000000000000000000000001"))
-	if err != ErrResourceNotFound {
+	if err != ErrNotFound {
 		t.Fatal("expected custom 404 err type for invalid request, got %w", err)
 	}
 }

@@ -17,7 +17,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var ErrResourceNotFound error = xerrors.New("resource not found")
+var ErrNotFound error = xerrors.New("resource not found")
 
 type Client struct {
 	httpClient *http.Client
@@ -113,7 +113,7 @@ func (c *Client) sendRequest(
 	if resp.StatusCode >= 400 {
 		// special case 404s to make consuming client API easier
 		if resp.StatusCode == http.StatusNotFound {
-			return ErrResourceNotFound
+			return ErrNotFound
 		}
 
 		return xerrors.Errorf("error making http request: %s", resp.Status)
@@ -163,7 +163,7 @@ type TreeResponse struct {
 
 // If a Merkle tree has been published to Lanyard, GetTreeFromRoot
 // will return the entire tree based on the root.
-// This endpoint will return ErrResourceNotFound if the tree
+// This endpoint will return ErrNotFound if the tree
 // associated with the root has not been published.
 func (c *Client) GetTreeFromRoot(
 	ctx context.Context,
@@ -191,7 +191,7 @@ type ProofResponse struct {
 
 // If the tree has been published to Lanyard, GetProof will
 // return the proof associated with an unHashedLeaf.
-// This endpoint will return ErrResourceNotFound if the tree
+// This endpoint will return ErrNotFound if the tree
 // associated with the root has not been published.
 func (c *Client) GetProofFromLeaf(
 	ctx context.Context,
@@ -222,7 +222,7 @@ type RootResponse struct {
 // If a Merkle tree has been published to Lanyard,
 // GetRootFromLeaf will return the root of the tree
 // based on a proof of a leaf. This endpoint will return
-// ErrResourceNotFound if the tree associated with the
+// ErrNotFound if the tree associated with the
 // leaf has not been published.
 func (c *Client) GetRootFromProof(
 	ctx context.Context,
