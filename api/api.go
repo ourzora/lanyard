@@ -21,17 +21,22 @@ import (
 
 type Server struct {
 	db *pgxpool.Pool
+	hc *http.Client
 }
 
 func New(db *pgxpool.Pool) *Server {
 	return &Server{
 		db: db,
+		hc: &http.Client{
+			Timeout: time.Second * 10,
+		},
 	}
 }
 
 func (s *Server) Handler(env, gitSha string) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/tree", s.TreeHandler)
+	mux.HandleFunc("/api/v1/tree/pin", s.PinTree)
 	mux.HandleFunc("/api/v1/proof", s.GetProof)
 	mux.HandleFunc("/api/v1/root", s.GetRoot)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
