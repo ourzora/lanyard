@@ -23,7 +23,7 @@ var (
 
 func init() {
 	var err error
-	client, err = NewCustomClient(Options{
+	client, err = NewWithOptions(Options{
 		APIBaseURL: os.Getenv("LANYARD_API_BASE_URL"),
 	})
 

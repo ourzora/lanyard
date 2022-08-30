@@ -35,12 +35,12 @@ type Options struct {
 	// APIBaseURL defines the base of all API endpoints. Defaults to DefaultAPIBase
 	APIBaseURL string
 
-	// HTTPClient allows you to override the HTTPClient Lanyard uses
+	// HTTPClient allows you to override the HTTPClient used by the API client
 	HTTPClient *http.Client
 }
 
-// NewClient returns a Client with custom options
-func NewCustomClient(opts Options) (*Client, error) {
+// NewWithOptions returns a Client with custom options
+func NewWithOptions(opts Options) (*Client, error) {
 	if opts.APIBaseURL == "" {
 		opts.APIBaseURL = DefaultAPIBaseURL
 	}
@@ -59,7 +59,7 @@ func NewCustomClient(opts Options) (*Client, error) {
 
 // New returns a Client with default options
 func New() (*Client, error) {
-	return NewCustomClient(Options{})
+	return NewWithOptions(Options{})
 }
 
 type CreateTreeOptions struct {
