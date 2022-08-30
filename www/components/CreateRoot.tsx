@@ -156,7 +156,7 @@ export default function CreateRoot() {
           )}
           value={addressInput}
           onChange={(e) => addressInputSet(e.target.value)}
-          placeholder="Paste addresses here, separated by commas, spaces or new lines"
+          placeholder="Paste addresses or ENS names here, separated by commas, spaces or new lines"
         />
       </div>
 
