@@ -157,7 +157,7 @@ func (c *Client) CreateTypedTree(
 
 	resp := &CreateResponse{}
 
-	err := c.sendRequest(ctx, http.MethodPost, "/tree/typed", req, resp)
+	err := c.sendRequest(ctx, http.MethodPost, "/tree", req, resp)
 	if err != nil {
 		return nil, err
 	}

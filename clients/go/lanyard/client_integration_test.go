@@ -42,6 +42,27 @@ func TestBasicMerkleTree(t *testing.T) {
 	}
 }
 
+func TestCreateTypedTree(t *testing.T) {
+	tree, err := client.CreateTypedTree(
+		context.Background(),
+		[]hexutil.Bytes{
+			hexutil.MustDecode("0x00000000000000000000000000000000000000010000000000000000000000000000000000000000000000008ac7230489e80000"),
+			hexutil.MustDecode("0x0000000000000000000000000000000000000002000000000000000000000000000000000000000000000001e5b8fa8fe2ac0000"),
+		},
+		[]string{"address", "uint256"},
+		true,
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const typedRoot = "0x6306f03ad6ae2ffeca080333a0a6828669192f5f8b61f70738bfe8ceb7e0a434"
+	if tree.MerkleRoot.String() != typedRoot {
+		t.Fatalf("expected %s, got %s", typedRoot, tree.MerkleRoot.String())
+	}
+}
+
 func TestBasicMerkleProof(t *testing.T) {
 	_, err := client.GetProofFromLeaf(context.Background(), hexutil.MustDecode(basicRoot), basicMerkle[0])
 	if err != nil {
