@@ -1,13 +1,12 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/contextwtf/lanyard/merkle"
-	"github.com/contextwtf/lanyard/types"
-
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -75,6 +74,32 @@ func addrPacked(leaf []byte, ltd []string) common.Address {
 	return common.Address{}
 }
 
+type jsonNullBool struct {
+	sql.NullBool
+}
+
+func (jnb *jsonNullBool) UnmarshalJSON(d []byte) error {
+	var b *bool
+	if err := json.Unmarshal(d, &b); err != nil {
+		return err
+	}
+	if b == nil {
+		jnb.Valid = false
+		return nil
+	}
+
+	jnb.Valid = true
+	jnb.Bool = *b
+	return nil
+}
+
+func (jnb jsonNullBool) MarshalJSON() ([]byte, error) {
+	if jnb.Valid {
+		return json.Marshal(jnb.Bool)
+	}
+	return json.Marshal(nil)
+}
+
 func encodeProof(p [][]byte) []string {
 	var res []string
 	for i := range p {
@@ -84,9 +109,9 @@ func encodeProof(p [][]byte) []string {
 }
 
 type createTreeReq struct {
-	Leaves []hexutil.Bytes    `json:"unhashedLeaves"`
-	Ltd    []string           `json:"leafTypeDescriptor"`
-	Packed types.JsonNullBool `json:"packedEncoding"`
+	Leaves []hexutil.Bytes `json:"unhashedLeaves"`
+	Ltd    []string        `json:"leafTypeDescriptor"`
+	Packed jsonNullBool    `json:"packedEncoding"`
 }
 
 type createTreeResp struct {
@@ -164,10 +189,10 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 }
 
 type getTreeResp struct {
-	UnhashedLeaves []hexutil.Bytes    `json:"unhashedLeaves"`
-	LeafCount      int                `json:"leafCount"`
-	Ltd            []string           `json:"leafTypeDescriptor"`
-	Packed         types.JsonNullBool `json:"packedEncoding"`
+	UnhashedLeaves []hexutil.Bytes `json:"unhashedLeaves"`
+	LeafCount      int             `json:"leafCount"`
+	Ltd            []string        `json:"leafTypeDescriptor"`
+	Packed         jsonNullBool    `json:"packedEncoding"`
 }
 
 func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {

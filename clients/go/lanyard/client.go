@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/contextwtf/lanyard/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"golang.org/x/xerrors"
 )
@@ -104,16 +103,10 @@ func (c *Client) sendRequest(
 	return nil
 }
 
-type CreateTreeRequest struct {
-	// UnhashedLeaves is a slice of addresses or ABI encoded types
-	UnhashedLeaves []hexutil.Bytes `json:"unhashedLeaves"`
-
-	// LeafTypeDescriptor describes the abi-encoded types of the leaves, and
-	// is required if leaves are not address types
-	LeafTypeDescriptor []string `json:"leafTypeDescriptor,omitempty"`
-
-	// PackedEncoding is true by default
-	PackedEncoding types.JsonNullBool `json:"packedEncoding,omitempty"` // what's sent over the wire
+type createTreeRequest struct {
+	UnhashedLeaves     []hexutil.Bytes `json:"unhashedLeaves"`
+	LeafTypeDescriptor []string        `json:"leafTypeDescriptor,omitempty"`
+	PackedEncoding     bool            `json:"packedEncoding,omitempty"`
 }
 
 type CreateResponse struct {
@@ -128,11 +121,43 @@ type CreateResponse struct {
 // as Zora or mint.fun.
 func (c *Client) CreateTree(
 	ctx context.Context,
-	req CreateTreeRequest,
+	addresses []hexutil.Bytes,
 ) (*CreateResponse, error) {
+	req := &createTreeRequest{
+		UnhashedLeaves: addresses,
+		PackedEncoding: false,
+	}
+	resp := &CreateResponse{}
+	err := c.sendRequest(ctx, http.MethodPost, "/tree", req, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// CreateTypedTree is a more advanced way of creating a tree.
+// Useful if your tree has ABI encoded data, such as quantity
+// or other values.
+func (c *Client) CreateTypedTree(
+	ctx context.Context,
+	// UnhashedLeaves is a slice of addresses or ABI encoded types
+	unhashedLeaves []hexutil.Bytes,
+	// leafTypeDescriptor describes the abi-encoded types of the leaves, and
+	// is required if leaves are not address types
+	leafTypeDescriptor []string,
+	// if the unhashedLeaves are ABI packed
+	packedEncoding bool,
+) (*CreateResponse, error) {
+	req := &createTreeRequest{
+		UnhashedLeaves:     unhashedLeaves,
+		LeafTypeDescriptor: leafTypeDescriptor,
+		PackedEncoding:     packedEncoding,
+	}
+
 	resp := &CreateResponse{}
 
-	err := c.sendRequest(ctx, http.MethodPost, "/tree", req, resp)
+	err := c.sendRequest(ctx, http.MethodPost, "/tree/typed", req, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +174,7 @@ type TreeResponse struct {
 	LeafTypeDescriptor []string `json:"leafTypeDescriptor,omitempty"`
 
 	// PackedEncoding is true by default
-	PackedEncoding types.JsonNullBool `json:"packedEncoding,omitempty"`
+	PackedEncoding bool `json:"packedEncoding,omitempty"`
 
 	LeafCount int `json:"leafCount"`
 }
