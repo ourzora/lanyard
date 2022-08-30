@@ -11,7 +11,7 @@ query DomainsQuery($names: [String!]!) {
 }
 `
 
-export const resolveEnsDomains = async (
+const resolveEnsDomainsBatch = async (
   ensNames: string[],
 ): Promise<{ [name: string]: string }> => {
   const variables = {
@@ -27,14 +27,40 @@ export const resolveEnsDomains = async (
   const {
     data,
   }: {
-    data?: { domains: { resolvedAddress: { id: string }; name: string }[] }
+    data?: {
+      domains: { resolvedAddress: { id: string } | null; name: string }[]
+    }
   } = await response.json()
   if (!data) {
     throw new Error('No data returned from subgraph')
   }
 
   return data.domains.reduce((acc, domain) => {
-    acc[domain.name] = domain.resolvedAddress.id
+    if (domain.resolvedAddress !== null) {
+      acc[domain.name] = domain.resolvedAddress.id
+    }
     return acc
   }, {} as { [name: string]: string })
+}
+
+export const resolveEnsDomains = async (
+  ensNames: string[],
+): Promise<{ [name: string]: string }> => {
+  const batches = chunk(ensNames, 100)
+  const results = await Promise.all(batches.map(resolveEnsDomainsBatch))
+  return results.reduce((acc, batch) => {
+    return { ...acc, ...batch }
+  }, {} as { [name: string]: string })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const chunk = (arr: any[], size: number): any[][] => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chunks: any[][] = []
+  let i = 0
+  while (i < arr.length) {
+    chunks.push(arr.slice(i, i + size))
+    i += size
+  }
+  return chunks
 }
