@@ -156,7 +156,7 @@ type TreeResponse struct {
 	LeafTypeDescriptor []string `json:"leafTypeDescriptor,omitempty"`
 
 	// PackedEncoding is true by default
-	PackedEncoding types.JsonNullBool `json:"packedEncoding,omitempty"` // what's sent over the wire
+	PackedEncoding types.JsonNullBool `json:"packedEncoding,omitempty"`
 
 	LeafCount int `json:"leafCount"`
 }
