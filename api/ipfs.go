@@ -23,7 +23,7 @@ var (
 
 func (s *Server) pinTree(ctx context.Context, root hexutil.Bytes) (string, error) {
 	if ipfsPinningServiceURL == "" {
-		return "", errors.New("error: IPFS_PINNING_SERVICE_URL not set")
+		return "", errors.New("IPFS_PINNING_SERVICE_URL not set")
 	}
 
 	const q = `
