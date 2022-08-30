@@ -6,10 +6,53 @@ import Button from 'components/Button'
 import { parseAddressesFromText } from 'utils/addressParsing'
 import { useRouter } from 'next/router'
 import { randomBytes } from 'crypto'
+import { resolveEnsDomains } from 'utils/ens'
 
 const useCreateMerkleRoot = () => {
-  const [{ value, status }, create] = useAsync(
-    async (addresses: string[]) => await createMerkleRoot(addresses),
+  const [ensMap, ensMapSet] = useState<Record<string, string>>({})
+
+  const [{ value, status, error: reqError }, create] = useAsync(
+    async (addressesOrENSNames: string[]) => {
+      const neededEnsNames: string[] = []
+      const addresses: string[] = []
+      for (const addressOrENSName of addressesOrENSNames) {
+        if (addressOrENSName.includes('.')) {
+          if (ensMap[addressOrENSName.toLowerCase()] !== undefined) {
+            addresses.push(ensMap[addressOrENSName.toLowerCase()])
+          } else {
+            neededEnsNames.push(addressOrENSName.toLowerCase())
+          }
+        } else {
+          addresses.push(addressOrENSName)
+        }
+      }
+
+      if (neededEnsNames.length > 0) {
+        const ensAddresses = await resolveEnsDomains(neededEnsNames)
+
+        ensMapSet((prev) => ({
+          ...prev,
+          ...ensAddresses,
+        }))
+
+        // clear out the addresses array
+        addresses.length = 0
+
+        for (const addressOrENSName of addressesOrENSNames) {
+          if (addressOrENSName.includes('.')) {
+            if (ensAddresses[addressOrENSName.toLowerCase()] !== undefined) {
+              addresses.push(ensAddresses[addressOrENSName.toLowerCase()])
+            } else {
+              throw new Error(`Could not resolve all ENS names`)
+            }
+          } else {
+            addresses.push(addressOrENSName)
+          }
+        }
+      }
+
+      return await createMerkleRoot(addresses)
+    },
   )
 
   const merkleRoot = useMemo(() => {
@@ -20,10 +63,12 @@ const useCreateMerkleRoot = () => {
 
   const error = useMemo(() => {
     if (isErrorResponse(value)) return value
+    if (reqError !== undefined)
+      return { error: true, message: reqError.message }
     return undefined
-  }, [value])
+  }, [value, reqError])
 
-  return { merkleRoot, error, status, create }
+  return { merkleRoot, error, status, create, parsedEnsNames: ensMap }
 }
 
 const randomAddress = () => `0x${randomBytes(20).toString('hex')}`
@@ -34,6 +79,7 @@ export default function CreateRoot() {
     error: errorResponse,
     status,
     create,
+    parsedEnsNames,
   } = useCreateMerkleRoot()
   const [addressInput, addressInputSet] = useState('')
 
@@ -74,6 +120,26 @@ export default function CreateRoot() {
 
     addressInputSet(addresses.join('\n'))
   }, [])
+
+  const handleRemoveInvalidENSNames = useCallback(() => {
+    const addresses = parsedAddresses
+      .filter((address) => {
+        return (
+          !address.includes('.') ||
+          parsedEnsNames[address.toLowerCase()] !== undefined
+        )
+      })
+      .join('\n')
+    addressInputSet(addresses)
+  }, [parsedAddresses, parsedEnsNames])
+
+  const showRemoveInvalidENSNames = useMemo(
+    // show the button if the error message contains `Could not resolve all ENS names`
+    () =>
+      errorResponse?.message?.includes('Could not resolve all ENS names') ??
+      false,
+    [errorResponse?.message],
+  )
 
   const buttonPending = status === 'loading' || merkleRoot !== undefined
 
@@ -118,9 +184,21 @@ export default function CreateRoot() {
         )}
       </div>
 
-      {status === 'success' && errorResponse !== undefined && (
+      {errorResponse !== undefined && (
         <div className="text-center sm:text-left w-full">
           Error: {errorResponse.message}
+          {showRemoveInvalidENSNames && (
+            <>
+              {' '}
+              <button
+                className="underline"
+                onClick={handleRemoveInvalidENSNames}
+                type="button"
+              >
+                Remove invalid ENS names
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
