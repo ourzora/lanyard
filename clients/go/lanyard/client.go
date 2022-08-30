@@ -140,14 +140,14 @@ func (c *Client) CreateTree(
 // CreateTypedTree is a more advanced way of creating a tree.
 // Useful if your tree has ABI encoded data, such as quantity
 // or other values.
+// unhashedLeaves is a slice of addresses or ABI encoded types.
+// leafTypeDescriptor describes the abi-encoded types of the leaves, and
+// is required if leaves are not address types.
+// Set packedEncoding to true if your arguments are packed/encoded
 func (c *Client) CreateTypedTree(
 	ctx context.Context,
-	// UnhashedLeaves is a slice of addresses or ABI encoded types
 	unhashedLeaves []hexutil.Bytes,
-	// leafTypeDescriptor describes the abi-encoded types of the leaves, and
-	// is required if leaves are not address types
 	leafTypeDescriptor []string,
-	// if the unhashedLeaves are ABI packed
 	packedEncoding bool,
 ) (*CreateResponse, error) {
 	req := &createTreeRequest{
