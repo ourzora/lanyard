@@ -61,30 +61,24 @@ func (c *Client) sendRequest(
 	body, destination any,
 ) error {
 	var (
-		req *http.Request
-		err error
-		url = c.url + path
+		url   string = c.url + path
+		jsonb []byte
+		err   error
 	)
 
-	if body == nil {
-		req, err = http.NewRequestWithContext(ctx, method, url, nil)
-
+	if body != nil {
+		jsonb, err = json.Marshal(body)
 		if err != nil {
-			return xerrors.Errorf("error creating request: %w", err)
+			return err
 		}
-	} else {
-		b, err := json.Marshal(body)
-		if err != nil {
-			return xerrors.Errorf("failed to marshal body: %w", err)
-		}
-		req, err = http.NewRequestWithContext(ctx, method, url, bytes.NewReader(b))
-		if err != nil {
-			return xerrors.Errorf("error creating request: %w", err)
-		}
-
-		req.Header.Set("Content-Type", "application/json")
 	}
 
+	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(jsonb))
+	if err != nil {
+		return xerrors.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "lanyard-go+v1.0.0")
 
 	resp, err := c.httpClient.Do(req)
