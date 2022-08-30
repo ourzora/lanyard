@@ -17,49 +17,42 @@ import (
 	"golang.org/x/xerrors"
 )
 
+var ErrResourceNotFound error = xerrors.New("resource not found")
+
 type Client struct {
 	httpClient *http.Client
-
-	options Options
+	url        string
 }
 
-const (
-	DefaultAPIBaseURL = "https://lanyard.org/api/v1"
-)
+type ClientOpt func(*Client)
 
-var (
-	ErrResourceNotFound error = xerrors.New("resource not found")
-)
-
-type Options struct {
-	// APIBaseURL defines the base of all API endpoints. Defaults to DefaultAPIBase
-	APIBaseURL string
-
-	// HTTPClient allows you to override the HTTPClient used by the API client
-	HTTPClient *http.Client
-}
-
-// NewWithOptions returns a Client with custom options
-func NewWithOptions(opts Options) (*Client, error) {
-	if opts.APIBaseURL == "" {
-		opts.APIBaseURL = DefaultAPIBaseURL
+func WithURL(url string) ClientOpt {
+	return func(c *Client) {
+		c.url = url
 	}
+}
 
-	if opts.HTTPClient == nil {
-		opts.HTTPClient = &http.Client{
+func WithClient(hc *http.Client) ClientOpt {
+	return func(c *Client) {
+		c.httpClient = hc
+	}
+}
+
+// Uses https://lanyard.org/api/v1 for a default url
+// and http.Client with a 30s timeout unless specified
+// using [WithURL] or [WithClient]
+func New(opts ...ClientOpt) *Client {
+	const url = "https://lanyard.org/api/v1"
+	c := &Client{
+		url: url,
+		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
-		}
+		},
 	}
-
-	return &Client{
-		httpClient: opts.HTTPClient,
-		options:    opts,
-	}, nil
-}
-
-// New returns a Client with default options
-func New() (*Client, error) {
-	return NewWithOptions(Options{})
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 type CreateTreeOptions struct {
@@ -89,7 +82,7 @@ func (c *Client) sendRequest(
 		err error
 	)
 
-	url := c.options.APIBaseURL + path
+	url := c.url + path
 
 	if body == nil {
 		req, err = http.NewRequestWithContext(ctx, method, url, nil)

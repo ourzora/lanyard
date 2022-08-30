@@ -22,15 +22,7 @@ var (
 )
 
 func init() {
-	var err error
-	client, err = NewWithOptions(Options{
-		APIBaseURL: os.Getenv("LANYARD_API_BASE_URL"),
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
+	client = New(WithURL(os.Getenv("LANYARD_API_BASE_URL")))
 }
 
 const basicRoot = "0xa7a6b1cb6d12308ec4818baac3413fafa9e8b52cdcd79252fa9e29c9a2f8aff1"
