@@ -146,7 +146,7 @@ func (c *Client) CreateTree(
 ) (*CreateResponse, error) {
 	resp := &CreateResponse{}
 
-	err := c.sendRequest(ctx, "POST", "/tree", opts, resp)
+	err := c.sendRequest(ctx, http.MethodPost, "/tree", opts, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func (c *Client) GetTreeFromRoot(
 	resp := &TreeResponse{}
 
 	err := c.sendRequest(
-		ctx, "GET",
+		ctx, http.MethodGet,
 		fmt.Sprintf("/tree?root=%s", root.String()),
 		nil, resp,
 	)
@@ -208,7 +208,7 @@ func (c *Client) GetProofFromLeaf(
 	resp := &ProofResponse{}
 
 	err := c.sendRequest(
-		ctx, "GET",
+		ctx, http.MethodGet,
 		fmt.Sprintf("/proof?root=%s&unhashedLeaf=%s",
 			root.String(), unhashedLeaf.String(),
 		),
@@ -247,7 +247,7 @@ func (c *Client) GetRootFromProof(
 	}
 
 	err := c.sendRequest(
-		ctx, "GET",
+		ctx, http.MethodGet,
 		fmt.Sprintf("/root?proof=%s",
 			strings.Join(pq, ","),
 		),
