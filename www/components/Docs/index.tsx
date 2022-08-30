@@ -25,7 +25,7 @@ export default function Docs() {
       <div className="flex flex-col gap-16">
         <Section
           title="Creating a Merkle tree"
-          description={`If you have a list of addresses for an allowlist, you can create a Merkle tree using this endpoint.  Any Merkle tree published on Lanyard will be publicly available to any user of the Lanyard’s API, including minting interfaces such as Zora or mint.fun.`}
+          description={`If you have a list of addresses for an allowlist, you can create a Merkle tree using this endpoint.  Any Merkle tree published on Lanyard will be publicly available to any user of Lanyard’s API, including minting interfaces such as Zora or mint.fun.`}
         >
           <CodeBlock code={createCode} language="javascript" />
         </Section>
