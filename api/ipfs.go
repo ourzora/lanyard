@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/contextwtf/lanyard/api/tracing"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -66,7 +67,9 @@ func (s *Server) pinTree(ctx context.Context, root hexutil.Bytes) (string, error
 	req.Header.Set("Authorization", "Bearer "+ipfsPinningSecret)
 	req.Header.Set("Content-Type", "application/json")
 
+	span, ctx := tracing.SpanFromContext(ctx, "ipfs.pinTree")
 	res, err := hc.Do(req)
+	span.Finish()
 
 	if err != nil {
 		return "", err
