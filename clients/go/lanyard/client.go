@@ -55,23 +55,6 @@ func New(opts ...ClientOpt) *Client {
 	return c
 }
 
-type CreateTreeOptions struct {
-	// UnhashedLeaves is a slice of addresses or ABI encoded types
-	UnhashedLeaves []hexutil.Bytes `json:"unhashedLeaves"`
-
-	// LeafTypeDescriptor describes the abi-encoded types of the leaves, and
-	// is required if leaves are not address types
-	LeafTypeDescriptor []string `json:"leafTypeDescriptor,omitempty"`
-
-	// PackedEncoding is true by default
-	PackedEncoding types.JsonNullBool `json:"packedEncoding,omitempty"` // what's sent over the wire
-}
-
-type CreateResponse struct {
-	// MerkleRoot is the root of the created merkle tree
-	MerkleRoot hexutil.Bytes `json:"merkleRoot"`
-}
-
 func (c *Client) sendRequest(
 	ctx context.Context,
 	method, path string,
@@ -128,6 +111,23 @@ func (c *Client) sendRequest(
 	return nil
 }
 
+type CreateTreeRequest struct {
+	// UnhashedLeaves is a slice of addresses or ABI encoded types
+	UnhashedLeaves []hexutil.Bytes `json:"unhashedLeaves"`
+
+	// LeafTypeDescriptor describes the abi-encoded types of the leaves, and
+	// is required if leaves are not address types
+	LeafTypeDescriptor []string `json:"leafTypeDescriptor,omitempty"`
+
+	// PackedEncoding is true by default
+	PackedEncoding types.JsonNullBool `json:"packedEncoding,omitempty"` // what's sent over the wire
+}
+
+type CreateResponse struct {
+	// MerkleRoot is the root of the created merkle tree
+	MerkleRoot hexutil.Bytes `json:"merkleRoot"`
+}
+
 // If you have a list of addresses for an allowlist, you can
 // create a Merkle tree using CreateTree. Any Merkle tree
 // published on Lanyard will be publicly available to any
@@ -135,11 +135,11 @@ func (c *Client) sendRequest(
 // as Zora or mint.fun.
 func (c *Client) CreateTree(
 	ctx context.Context,
-	opts CreateTreeOptions,
+	req CreateTreeRequest,
 ) (*CreateResponse, error) {
 	resp := &CreateResponse{}
 
-	err := c.sendRequest(ctx, http.MethodPost, "/tree", opts, resp)
+	err := c.sendRequest(ctx, http.MethodPost, "/tree", req, resp)
 	if err != nil {
 		return nil, err
 	}

@@ -32,7 +32,7 @@ func init() {
 const basicRoot = "0xa7a6b1cb6d12308ec4818baac3413fafa9e8b52cdcd79252fa9e29c9a2f8aff1"
 
 func TestBasicMerkleTree(t *testing.T) {
-	tree, err := client.CreateTree(context.Background(), CreateTreeOptions{
+	tree, err := client.CreateTree(context.Background(), CreateTreeRequest{
 		UnhashedLeaves: basicMerkle,
 	})
 
