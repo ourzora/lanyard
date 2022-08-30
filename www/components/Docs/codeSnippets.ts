@@ -33,7 +33,7 @@ GET https://lanyard.org/api/v1/tree?root={root}
 
   // in general you can ignore the two following fields
   "leafTypeDescriptor": null, // or an array of solidity types
-  "packedEncoding": null // or a boolean value
+  "packedEncoding": true // a boolean value
 }
 `.trim()
 
