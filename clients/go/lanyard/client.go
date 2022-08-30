@@ -63,9 +63,8 @@ func (c *Client) sendRequest(
 	var (
 		req *http.Request
 		err error
+		url = c.url + path
 	)
-
-	url := c.url + path
 
 	if body == nil {
 		req, err = http.NewRequestWithContext(ctx, method, url, nil)
