@@ -21,15 +21,11 @@ import (
 
 type Server struct {
 	db *pgxpool.Pool
-	hc *http.Client
 }
 
 func New(db *pgxpool.Pool) *Server {
 	return &Server{
 		db: db,
-		hc: &http.Client{
-			Timeout: time.Second * 10,
-		},
 	}
 }
 

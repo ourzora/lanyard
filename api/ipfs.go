@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -14,6 +15,9 @@ import (
 var (
 	ipfsPinningServiceURL = os.Getenv("IPFS_PINNING_SERVICE_URL")
 	ipfsPinningSecret     = os.Getenv("IPFS_PINNING_SECRET")
+	hc                    = &http.Client{
+		Timeout: time.Second * 10,
+	}
 )
 
 func (s *Server) pinTree(ctx context.Context, root hexutil.Bytes) (string, error) {
@@ -62,7 +66,7 @@ func (s *Server) pinTree(ctx context.Context, root hexutil.Bytes) (string, error
 	req.Header.Set("Authorization", "Bearer "+ipfsPinningSecret)
 	req.Header.Set("Content-Type", "application/json")
 
-	res, err := s.hc.Do(req)
+	res, err := hc.Do(req)
 
 	if err != nil {
 		return "", err
