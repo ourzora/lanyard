@@ -106,7 +106,7 @@ func (c *Client) sendRequest(
 type createTreeRequest struct {
 	UnhashedLeaves     []hexutil.Bytes `json:"unhashedLeaves"`
 	LeafTypeDescriptor []string        `json:"leafTypeDescriptor,omitempty"`
-	PackedEncoding     bool            `json:"packedEncoding,omitempty"`
+	PackedEncoding     bool            `json:"packedEncoding"`
 }
 
 type CreateResponse struct {
@@ -125,8 +125,9 @@ func (c *Client) CreateTree(
 ) (*CreateResponse, error) {
 	req := &createTreeRequest{
 		UnhashedLeaves: addresses,
-		PackedEncoding: false,
+		PackedEncoding: true,
 	}
+
 	resp := &CreateResponse{}
 	err := c.sendRequest(ctx, http.MethodPost, "/tree", req, resp)
 	if err != nil {
@@ -171,10 +172,10 @@ type TreeResponse struct {
 
 	// LeafTypeDescriptor describes the abi-encoded types of the leaves, and
 	// is required if leaves are not address types
-	LeafTypeDescriptor []string `json:"leafTypeDescriptor,omitempty"`
+	LeafTypeDescriptor []string `json:"leafTypeDescriptor"`
 
 	// PackedEncoding is true by default
-	PackedEncoding bool `json:"packedEncoding,omitempty"`
+	PackedEncoding bool `json:"packedEncoding"`
 
 	LeafCount int `json:"leafCount"`
 }
