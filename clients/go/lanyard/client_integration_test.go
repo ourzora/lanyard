@@ -22,7 +22,11 @@ var (
 )
 
 func init() {
-	client = New(WithURL(os.Getenv("LANYARD_API_BASE_URL")))
+	if os.Getenv("LANYARD_API_BASE_URL") == "" {
+		client = New()
+	} else {
+		client = New(WithURL(os.Getenv("LANYARD_API_BASE_URL")))
+	}
 }
 
 const basicRoot = "0xa7a6b1cb6d12308ec4818baac3413fafa9e8b52cdcd79252fa9e29c9a2f8aff1"
