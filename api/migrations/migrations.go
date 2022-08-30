@@ -70,8 +70,19 @@ var Migrations = []migrate.Migration{
 	{
 		Name: "2022-08-22.1.add-inserted-at.sql",
 		SQL: `
-		ALTER TABLE trees 
+		ALTER TABLE trees
 		ADD COLUMN "inserted_at" timestamptz NOT NULL DEFAULT now();
+		`,
+	},
+	{
+		Name: "2022-08-30.0.packed-bool.sql",
+		SQL: `
+		UPDATE trees SET packed = true
+		WHERE packed IS NULL;
+
+		ALTER TABLE trees
+		ALTER COLUMN packed
+		SET NOT NULL;
 		`,
 	},
 }
