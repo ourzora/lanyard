@@ -12,17 +12,35 @@ const useCreateMerkleRoot = () => {
   const [ensMap, ensMapSet] = useState<Record<string, string>>({})
 
   const [{ value, status, error: reqError }, create] = useAsync(
-    async (addressesOrENSNames: string[]) => {
+    async (addressesOrENSNames: string[], removeDuplicates: boolean) => {
+      const seenAddresses = new Set<string>()
       const neededEnsNames: string[] = []
       const addresses: string[] = []
+
       for (const addressOrENSName of addressesOrENSNames) {
         if (addressOrENSName.includes('.')) {
-          if (ensMap[addressOrENSName.toLowerCase()] !== undefined) {
-            addresses.push(ensMap[addressOrENSName.toLowerCase()])
+          const addressFromEns: string | undefined =
+            ensMap[addressOrENSName.toLowerCase()]
+          if (addressFromEns !== undefined) {
+            if (
+              removeDuplicates &&
+              seenAddresses.has(addressFromEns.toLowerCase())
+            ) {
+              continue
+            }
+            seenAddresses.add(addressFromEns.toLowerCase())
+            addresses.push(addressFromEns)
           } else {
             neededEnsNames.push(addressOrENSName.toLowerCase())
           }
         } else {
+          if (
+            removeDuplicates &&
+            seenAddresses.has(addressOrENSName.toLowerCase())
+          ) {
+            continue
+          }
+          seenAddresses.add(addressOrENSName.toLowerCase())
           addresses.push(addressOrENSName)
         }
       }
@@ -37,15 +55,31 @@ const useCreateMerkleRoot = () => {
 
         // clear out the addresses array
         addresses.length = 0
+        seenAddresses.clear()
 
         for (const addressOrENSName of addressesOrENSNames) {
           if (addressOrENSName.includes('.')) {
-            if (ensAddresses[addressOrENSName.toLowerCase()] !== undefined) {
-              addresses.push(ensAddresses[addressOrENSName.toLowerCase()])
+            const addressFromEns = ensAddresses[addressOrENSName.toLowerCase()]
+            if (addressFromEns !== undefined) {
+              if (
+                removeDuplicates &&
+                seenAddresses.has(addressFromEns.toLowerCase())
+              ) {
+                continue
+              }
+              seenAddresses.add(addressFromEns.toLowerCase())
+              addresses.push(addressFromEns)
             } else {
               throw new Error(`Could not resolve all ENS names`)
             }
           } else {
+            if (
+              removeDuplicates &&
+              seenAddresses.has(addressOrENSName.toLowerCase())
+            ) {
+              continue
+            }
+            seenAddresses.add(addressOrENSName.toLowerCase())
             addresses.push(addressOrENSName)
           }
         }
@@ -82,6 +116,8 @@ export default function CreateRoot() {
     parsedEnsNames,
   } = useCreateMerkleRoot()
   const [addressInput, addressInputSet] = useState('')
+  const [advancedPanelOpen, setAdvancedPanelOpen] = useState(false)
+  const [removeDuplicates, setRemoveDuplicates] = useState(true)
 
   const handleSubmit = useCallback(() => {
     if (addressInput.trim().length === 0) {
@@ -89,16 +125,13 @@ export default function CreateRoot() {
     }
 
     const addresses = parseAddressesFromText(addressInput)
-    create(addresses)
-  }, [addressInput, create])
+    create(addresses, removeDuplicates)
+  }, [addressInput, create, removeDuplicates])
 
-  const parsedAddresses = useMemo(() => {
-    if (addressInput.trim().length === 0) {
-      return []
-    }
-
-    return parseAddressesFromText(addressInput)
-  }, [addressInput])
+  const parsedAddresses = useMemo(
+    () => parseAddressesFromText(addressInput),
+    [addressInput],
+  )
 
   const parsedAddressesCount = useMemo(
     () => parsedAddresses.length,
@@ -182,6 +215,26 @@ export default function CreateRoot() {
             {parsedAddressesCount === 1 ? '' : 'es'} found
           </div>
         )}
+      </div>
+
+      <div>
+        <button onClick={() => setAdvancedPanelOpen(!advancedPanelOpen)}>
+          Advanced options{' '}
+          <span className="text-xs">{advancedPanelOpen ? '▲' : '▼'}</span>
+        </button>
+        <div className={classNames('mt-2', { hidden: !advancedPanelOpen })}>
+          {/* checkbox */}
+          <div className="flex flex-col gap-y-2">
+            <label>
+              <input
+                type="checkbox"
+                checked={removeDuplicates}
+                onChange={() => setRemoveDuplicates(!removeDuplicates)}
+              />
+              <span className="ml-2">Remove duplicate addresses</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       {errorResponse !== undefined && (
