@@ -29,7 +29,10 @@ func init() {
 	}
 }
 
-const basicRoot = "0xa7a6b1cb6d12308ec4818baac3413fafa9e8b52cdcd79252fa9e29c9a2f8aff1"
+const (
+	basicRoot = "0xa7a6b1cb6d12308ec4818baac3413fafa9e8b52cdcd79252fa9e29c9a2f8aff1"
+	typedRoot = "0x6306f03ad6ae2ffeca080333a0a6828669192f5f8b61f70738bfe8ceb7e0a434"
+)
 
 func TestBasicMerkleTree(t *testing.T) {
 	tree, err := client.CreateTree(context.Background(), basicMerkle)
@@ -57,7 +60,6 @@ func TestCreateTypedTree(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	const typedRoot = "0x6306f03ad6ae2ffeca080333a0a6828669192f5f8b61f70738bfe8ceb7e0a434"
 	if tree.MerkleRoot.String() != typedRoot {
 		t.Fatalf("expected %s, got %s", typedRoot, tree.MerkleRoot.String())
 	}
@@ -74,6 +76,13 @@ func TestBasicMerkleProof404(t *testing.T) {
 	_, err := client.GetProofFromLeaf(context.Background(), []byte{0x01}, hexutil.MustDecode("0x0000000000000000000000000000000000000001"))
 	if err != ErrNotFound {
 		t.Fatal("expected custom 404 err type for invalid request, got %w", err)
+	}
+}
+
+func TestGetProofFromAddr(t *testing.T) {
+	_, err := client.GetProofFromAddr(context.Background(), hexutil.MustDecode(typedRoot), hexutil.MustDecode("0x0000000000000000000000000000000000000001"))
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
