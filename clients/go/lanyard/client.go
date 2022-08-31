@@ -208,14 +208,14 @@ type ProofResponse struct {
 	Proof        []hexutil.Bytes `json:"proof"`
 }
 
-// If the tree has been published to Lanyard, GetProof will
-// return the proof associated with an unHashedLeaf.
-// This endpoint will return ErrNotFound if the tree
-// associated with the root has not been published.
+// If the tree has been published to Lanyard,
+// GetProofFromLeaf will return the proof associated
+// with an unhashedLeaf. This endpoint will return
+// ErrNotFound if the tree associated with the root
+// has not been published.
 func (c *Client) GetProofFromLeaf(
 	ctx context.Context,
-	root hexutil.Bytes,
-	unhashedLeaf hexutil.Bytes,
+	root, unhashedLeaf hexutil.Bytes,
 ) (*ProofResponse, error) {
 	resp := &ProofResponse{}
 
@@ -223,6 +223,32 @@ func (c *Client) GetProofFromLeaf(
 		ctx, http.MethodGet,
 		fmt.Sprintf("/proof?root=%s&unhashedLeaf=%s",
 			root.String(), unhashedLeaf.String(),
+		),
+		nil, resp,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// If the tree has been published to Lanyard,
+// GetProofFromAddr will return the proof associated
+// with an address. This endpoint will return
+// ErrNotFound if the tree associated with the root
+// has not been published.
+func (c *Client) GetProofFromAddr(
+	ctx context.Context,
+	root, addr hexutil.Bytes,
+) (*ProofResponse, error) {
+	resp := &ProofResponse{}
+
+	err := c.sendRequest(
+		ctx, http.MethodGet,
+		fmt.Sprintf("/proof?root=%s&address=%s",
+			root.String(), addr.String(),
 		),
 		nil, resp,
 	)
