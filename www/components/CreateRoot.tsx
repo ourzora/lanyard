@@ -3,13 +3,49 @@ import classNames from 'classnames'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isErrorResponse, createMerkleRoot } from 'utils/api'
 import Button from 'components/Button'
-import { parseAddressesFromText } from 'utils/addressParsing'
+import { parseAddressesFromText, prepareAddresses } from 'utils/addressParsing'
 import { useRouter } from 'next/router'
 import { randomBytes } from 'crypto'
+import { resolveEnsDomains } from 'utils/ens'
 
 const useCreateMerkleRoot = () => {
-  const [{ value, status }, create] = useAsync(
-    async (addresses: string[]) => await createMerkleRoot(addresses),
+  const [ensMap, setEnsMap] = useState<Record<string, string>>({})
+
+  const [{ value, status, error: reqError }, create] = useAsync(
+    async (addressesOrENSNames: string[]) => {
+      let prepared = prepareAddresses(addressesOrENSNames, ensMap)
+
+      if (prepared.unresolvedEnsNames.length > 0) {
+        const ensAddresses = await resolveEnsDomains(
+          prepared.unresolvedEnsNames,
+        )
+
+        setEnsMap((prev) => ({
+          ...prev,
+          ...ensAddresses,
+        }))
+
+        prepared = prepareAddresses(addressesOrENSNames, {
+          ...ensMap,
+          ...ensAddresses,
+        })
+
+        if (prepared.unresolvedEnsNames.length > 0) {
+          throw new Error(`Could not resolve all ENS names`)
+        }
+      }
+
+      if (prepared.addresses.length !== prepared.dedupedAddresses.length) {
+        return (
+          await Promise.all([
+            createMerkleRoot(prepared.dedupedAddresses),
+            createMerkleRoot(prepared.addresses),
+          ])
+        )[0]
+      }
+
+      return await createMerkleRoot(prepared.dedupedAddresses)
+    },
   )
 
   const merkleRoot = useMemo(() => {
@@ -20,10 +56,12 @@ const useCreateMerkleRoot = () => {
 
   const error = useMemo(() => {
     if (isErrorResponse(value)) return value
+    if (reqError !== undefined)
+      return { error: true, message: reqError.message }
     return undefined
-  }, [value])
+  }, [value, reqError])
 
-  return { merkleRoot, error, status, create }
+  return { merkleRoot, error, status, create, parsedEnsNames: ensMap }
 }
 
 const randomAddress = () => `0x${randomBytes(20).toString('hex')}`
@@ -34,6 +72,7 @@ export default function CreateRoot() {
     error: errorResponse,
     status,
     create,
+    parsedEnsNames,
   } = useCreateMerkleRoot()
   const [addressInput, addressInputSet] = useState('')
 
@@ -46,13 +85,10 @@ export default function CreateRoot() {
     create(addresses)
   }, [addressInput, create])
 
-  const parsedAddresses = useMemo(() => {
-    if (addressInput.trim().length === 0) {
-      return []
-    }
-
-    return parseAddressesFromText(addressInput)
-  }, [addressInput])
+  const parsedAddresses = useMemo(
+    () => parseAddressesFromText(addressInput),
+    [addressInput],
+  )
 
   const parsedAddressesCount = useMemo(
     () => parsedAddresses.length,
@@ -75,6 +111,26 @@ export default function CreateRoot() {
     addressInputSet(addresses.join('\n'))
   }, [])
 
+  const handleRemoveInvalidENSNames = useCallback(() => {
+    const addresses = parsedAddresses
+      .filter((address) => {
+        return (
+          !address.includes('.') ||
+          parsedEnsNames[address.toLowerCase()] !== undefined
+        )
+      })
+      .join('\n')
+    addressInputSet(addresses)
+  }, [parsedAddresses, parsedEnsNames])
+
+  const showRemoveInvalidENSNames = useMemo(
+    // show the button if the error message contains `Could not resolve all ENS names`
+    () =>
+      errorResponse?.message?.includes('Could not resolve all ENS names') ??
+      false,
+    [errorResponse?.message],
+  )
+
   const buttonPending = status === 'loading' || merkleRoot !== undefined
 
   return (
@@ -90,7 +146,7 @@ export default function CreateRoot() {
           )}
           value={addressInput}
           onChange={(e) => addressInputSet(e.target.value)}
-          placeholder="Paste addresses here, separated by commas, spaces or new lines"
+          placeholder="Paste addresses or ENS names here, separated by commas, spaces or new lines"
         />
       </div>
 
@@ -118,9 +174,21 @@ export default function CreateRoot() {
         )}
       </div>
 
-      {status === 'success' && errorResponse !== undefined && (
+      {errorResponse !== undefined && (
         <div className="text-center sm:text-left w-full">
           Error: {errorResponse.message}
+          {showRemoveInvalidENSNames && (
+            <>
+              {' '}
+              <button
+                className="underline"
+                onClick={handleRemoveInvalidENSNames}
+                type="button"
+              >
+                Remove invalid ENS names
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
