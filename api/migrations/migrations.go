@@ -85,4 +85,23 @@ var Migrations = []migrate.Migration{
 		SET NOT NULL;
 		`,
 	},
+	{
+		Name: "2022-08-31.0.root-func-index.sql",
+		SQL: `
+		CREATE OR REPLACE FUNCTION proofs_array (data jsonb)
+			RETURNS text[]
+			AS $CODE$
+		BEGIN
+			RETURN ARRAY (
+				SELECT
+					jsonb_array_elements(data) ->> 'proof');
+		END
+		$CODE$
+		LANGUAGE plpgsql
+		IMMUTABLE;
+
+		CREATE INDEX proofs_arr_idx ON trees USING GIN ((proofs_array(proofs)));
+		DROP INDEX public."trees_proofs_idx";
+	`,
+	},
 }
