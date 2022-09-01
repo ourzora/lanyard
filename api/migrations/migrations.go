@@ -101,7 +101,7 @@ var Migrations = []migrate.Migration{
 		IMMUTABLE;
 
 		CREATE INDEX proofs_arr_idx ON trees USING GIN ((proofs_array(proofs)));
-		DROP INDEX public."trees_proofs_idx";
+		DROP INDEX "trees_proofs_idx";
 	`,
 	},
 }
