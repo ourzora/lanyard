@@ -45,7 +45,7 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 	const q = `
 		SELECT root
 		FROM trees
-		WHERE proofs @> $1
+		WHERE proofs_array(proofs) @> proofs_array($1)
 		LIMIT 1
 	`
 
