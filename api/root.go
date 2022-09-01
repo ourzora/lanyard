@@ -10,13 +10,19 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func proofURLToDBQuery(param string) string {
+func proofURLToDBQuery(param string) []string {
 	q, err := json.Marshal(strings.Split(param, ","))
 	if err != nil {
-		return ""
+		return []string{}
 	}
 
-	return string(q)
+	// encode again
+	q, err = json.Marshal(string(q))
+	if err != nil {
+		return []string{}
+	}
+
+	return []string{string(q)}
 }
 
 func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
@@ -29,15 +35,15 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 		proof   = r.URL.Query().Get("proof")
 		dbQuery = proofURLToDBQuery(proof)
 	)
-	if proof == "" || dbQuery == "" {
+	if proof == "" || len(dbQuery) == 0 {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing list of proofs")
 		return
 	}
 
 	const q = `
 		SELECT root
-		FROM trees, jsonb_array_elements(trees.proofs) vals
-		WHERE vals->'proof' = $1
+		FROM trees
+		WHERE proofs_array(proofs) @> $1
 		LIMIT 1
 	`
 
