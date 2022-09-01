@@ -3,89 +3,48 @@ import classNames from 'classnames'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isErrorResponse, createMerkleRoot } from 'utils/api'
 import Button from 'components/Button'
-import { parseAddressesFromText } from 'utils/addressParsing'
+import { parseAddressesFromText, prepareAddresses } from 'utils/addressParsing'
 import { useRouter } from 'next/router'
 import { randomBytes } from 'crypto'
 import { resolveEnsDomains } from 'utils/ens'
 
 const useCreateMerkleRoot = () => {
-  const [ensMap, ensMapSet] = useState<Record<string, string>>({})
+  const [ensMap, setEnsMap] = useState<Record<string, string>>({})
 
   const [{ value, status, error: reqError }, create] = useAsync(
-    async (addressesOrENSNames: string[], removeDuplicates: boolean) => {
-      const seenAddresses = new Set<string>()
-      const neededEnsNames: string[] = []
-      const addresses: string[] = []
+    async (addressesOrENSNames: string[]) => {
+      let prepared = prepareAddresses(addressesOrENSNames, ensMap)
 
-      for (const addressOrENSName of addressesOrENSNames) {
-        if (addressOrENSName.includes('.')) {
-          const addressFromEns: string | undefined =
-            ensMap[addressOrENSName.toLowerCase()]
-          if (addressFromEns !== undefined) {
-            if (
-              removeDuplicates &&
-              seenAddresses.has(addressFromEns.toLowerCase())
-            ) {
-              continue
-            }
-            seenAddresses.add(addressFromEns.toLowerCase())
-            addresses.push(addressFromEns)
-          } else {
-            neededEnsNames.push(addressOrENSName.toLowerCase())
-          }
-        } else {
-          if (
-            removeDuplicates &&
-            seenAddresses.has(addressOrENSName.toLowerCase())
-          ) {
-            continue
-          }
-          seenAddresses.add(addressOrENSName.toLowerCase())
-          addresses.push(addressOrENSName)
-        }
-      }
+      if (prepared.unresolvedEnsNames.length > 0) {
+        const ensAddresses = await resolveEnsDomains(
+          prepared.unresolvedEnsNames,
+        )
 
-      if (neededEnsNames.length > 0) {
-        const ensAddresses = await resolveEnsDomains(neededEnsNames)
-
-        ensMapSet((prev) => ({
+        setEnsMap((prev) => ({
           ...prev,
           ...ensAddresses,
         }))
 
-        // clear out the addresses array
-        addresses.length = 0
-        seenAddresses.clear()
+        prepared = prepareAddresses(addressesOrENSNames, {
+          ...ensMap,
+          ...ensAddresses,
+        })
 
-        for (const addressOrENSName of addressesOrENSNames) {
-          if (addressOrENSName.includes('.')) {
-            const addressFromEns = ensAddresses[addressOrENSName.toLowerCase()]
-            if (addressFromEns !== undefined) {
-              if (
-                removeDuplicates &&
-                seenAddresses.has(addressFromEns.toLowerCase())
-              ) {
-                continue
-              }
-              seenAddresses.add(addressFromEns.toLowerCase())
-              addresses.push(addressFromEns)
-            } else {
-              throw new Error(`Could not resolve all ENS names`)
-            }
-          } else {
-            if (
-              removeDuplicates &&
-              seenAddresses.has(addressOrENSName.toLowerCase())
-            ) {
-              continue
-            }
-            seenAddresses.add(addressOrENSName.toLowerCase())
-            addresses.push(addressOrENSName)
-          }
+        if (prepared.unresolvedEnsNames.length > 0) {
+          throw new Error(`Could not resolve all ENS names`)
         }
       }
 
-      return await createMerkleRoot(addresses)
+      if (prepared.addresses.length !== prepared.dedupedAddresses.length) {
+        return (
+          await Promise.all([
+            createMerkleRoot(prepared.dedupedAddresses),
+            createMerkleRoot(prepared.addresses),
+          ])
+        )[0]
+      }
+
+      return await createMerkleRoot(prepared.dedupedAddresses)
     },
   )
 
@@ -116,8 +75,6 @@ export default function CreateRoot() {
     parsedEnsNames,
   } = useCreateMerkleRoot()
   const [addressInput, addressInputSet] = useState('')
-  const [advancedPanelOpen, setAdvancedPanelOpen] = useState(false)
-  const [removeDuplicates, setRemoveDuplicates] = useState(true)
 
   const handleSubmit = useCallback(() => {
     if (addressInput.trim().length === 0) {
@@ -125,8 +82,8 @@ export default function CreateRoot() {
     }
 
     const addresses = parseAddressesFromText(addressInput)
-    create(addresses, removeDuplicates)
-  }, [addressInput, create, removeDuplicates])
+    create(addresses)
+  }, [addressInput, create])
 
   const parsedAddresses = useMemo(
     () => parseAddressesFromText(addressInput),
@@ -215,26 +172,6 @@ export default function CreateRoot() {
             {parsedAddressesCount === 1 ? '' : 'es'} found
           </div>
         )}
-      </div>
-
-      <div>
-        <button onClick={() => setAdvancedPanelOpen(!advancedPanelOpen)}>
-          Advanced options{' '}
-          <span className="text-xs">{advancedPanelOpen ? '▲' : '▼'}</span>
-        </button>
-        <div className={classNames('mt-2', { hidden: !advancedPanelOpen })}>
-          {/* checkbox */}
-          <div className="flex flex-col gap-y-2">
-            <label>
-              <input
-                type="checkbox"
-                checked={removeDuplicates}
-                onChange={() => setRemoveDuplicates(!removeDuplicates)}
-              />
-              <span className="ml-2">Remove duplicate addresses</span>
-            </label>
-          </div>
-        </div>
       </div>
 
       {errorResponse !== undefined && (
