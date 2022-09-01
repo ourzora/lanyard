@@ -11,15 +11,7 @@ import (
 )
 
 func proofURLToDBQuery(param string) string {
-	type proofLookup struct {
-		Proof []string `json:"proof"`
-	}
-
-	lookup := proofLookup{
-		Proof: strings.Split(param, ","),
-	}
-
-	q, err := json.Marshal([]proofLookup{lookup})
+	q, err := json.Marshal(strings.Split(param, ","))
 	if err != nil {
 		return ""
 	}
@@ -44,8 +36,8 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 
 	const q = `
 		SELECT root
-		FROM trees
-		WHERE proofs @> $1
+		FROM trees, jsonb_array_elements(trees.proofs) vals
+		WHERE vals->'proof' = $1
 		LIMIT 1
 	`
 
