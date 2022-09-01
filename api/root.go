@@ -10,19 +10,21 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func proofURLToDBQuery(param string) []string {
-	q, err := json.Marshal(strings.Split(param, ","))
-	if err != nil {
-		return []string{}
+func proofURLToDBQuery(param string) string {
+	type proofLookup struct {
+		Proof []string `json:"proof"`
 	}
 
-	// encode again
-	q, err = json.Marshal(string(q))
-	if err != nil {
-		return []string{}
+	lookup := proofLookup{
+		Proof: strings.Split(param, ","),
 	}
 
-	return []string{string(q)}
+	q, err := json.Marshal([]proofLookup{lookup})
+	if err != nil {
+		return ""
+	}
+
+	return string(q)
 }
 
 func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +37,7 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 		proof   = r.URL.Query().Get("proof")
 		dbQuery = proofURLToDBQuery(proof)
 	)
-	if proof == "" || len(dbQuery) == 0 {
+	if proof == "" || dbQuery == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing list of proofs")
 		return
 	}
@@ -43,7 +45,7 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 	const q = `
 		SELECT root
 		FROM trees
-		WHERE proofs_array(proofs) @> $1
+		WHERE proofs_array(proofs) @> proofs_array($1)
 		LIMIT 1
 	`
 
