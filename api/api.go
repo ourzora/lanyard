@@ -108,6 +108,11 @@ func versionHandler(h http.Handler, sha string) http.Handler {
 
 func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/health" {
+			h.ServeHTTP(w, r)
+			return
+		}
+
 		span, ctx := tracing.SpanFromContext(r.Context(), "http.request")
 
 		defer span.Finish()
