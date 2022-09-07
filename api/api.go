@@ -108,6 +108,11 @@ func versionHandler(h http.Handler, sha string) http.Handler {
 
 func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/health" {
+			h.ServeHTTP(w, r)
+			return
+		}
+
 		span, ctx := tracing.SpanFromContext(r.Context(), "http.request")
 
 		defer span.Finish()
@@ -131,13 +136,11 @@ func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 		requestStart := time.Now()
 		h.ServeHTTP(sc, r.WithContext(ctx))
 
-		if r.URL.Path != "/health" {
-			// log every request
-			log.Info().
-				Int("status", sc.status).
-				Dur("duration", time.Since(requestStart)).
-				Msg("")
-		}
+		// log every request
+		log.Info().
+			Int("status", sc.status).
+			Dur("duration", time.Since(requestStart)).
+			Msg("")
 
 		span.SetTag(ext.HTTPCode, sc.status)
 	})
