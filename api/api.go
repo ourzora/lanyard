@@ -136,13 +136,11 @@ func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 		requestStart := time.Now()
 		h.ServeHTTP(sc, r.WithContext(ctx))
 
-		if r.URL.Path != "/health" {
-			// log every request
-			log.Info().
-				Int("status", sc.status).
-				Dur("duration", time.Since(requestStart)).
-				Msg("")
-		}
+		// log every request
+		log.Info().
+			Int("status", sc.status).
+			Dur("duration", time.Since(requestStart)).
+			Msg("")
 
 		span.SetTag(ext.HTTPCode, sc.status)
 	})
