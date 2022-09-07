@@ -54,7 +54,7 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 		&rr.Root,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
-		s.sendJSONError(r, w, err, http.StatusNotFound, "root not found for proofs")
+		s.sendJSONError(r, w, nil, http.StatusNotFound, "root not found for proofs")
 		return
 	} else if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting root")

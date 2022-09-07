@@ -189,7 +189,7 @@ func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
 		&tr.Packed,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
-		s.sendJSONError(r, w, err, http.StatusNotFound, "tree not found for root")
+		s.sendJSONError(r, w, nil, http.StatusNotFound, "tree not found for root")
 		return
 	} else if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting tree")
