@@ -7,7 +7,7 @@ processes = []
 [env]
 
 [build]
-  image = "registry.fly.io/al-prodal:latest"
+  image = "registry.fly.io/al-prod:latest"
 
 [experimental]
   allowed_public_ports = []
@@ -19,8 +19,8 @@ processes = []
   protocol = "tcp"
   script_checks = []
   [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
+    hard_limit = 150
+    soft_limit = 100
     type = "connections"
 
   [[services.ports]]
