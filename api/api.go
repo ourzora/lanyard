@@ -183,6 +183,7 @@ func (s *Server) sendJSONError(
 		w.Header().Set("Cache-Control", "no-cache, max-age=0, must-revalidate")
 	}
 
+	// all headers need to be set before this line
 	w.WriteHeader(code)
 
 	if err != nil {
