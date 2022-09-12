@@ -179,6 +179,11 @@ func (s *Server) sendJSONError(
 	customMessage string,
 ) {
 	w.Header().Set("Content-Type", "application/json")
+	if code == http.StatusNotFound && w.Header().Get("Cache-Control") == "" {
+		w.Header().Set("Cache-Control", "no-cache, max-age=0, must-revalidate")
+	}
+
+	// all headers need to be set before this line
 	w.WriteHeader(code)
 
 	if err != nil {
