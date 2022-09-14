@@ -75,7 +75,6 @@ func main() {
 		dbc.ConnConfig.LogLevel = pgx.LogLevelTrace
 	}
 
-	dbc.MinConns = 10
 	dbc.MaxConns = 30
 	db, err := pgxpool.ConnectConfig(ctx, dbc)
 	check(err)
