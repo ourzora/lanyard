@@ -61,11 +61,11 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 
-	if len(rr.Root) == 0 {
-		s.sendJSONError(r, w, nil, http.StatusNotFound, "root not found for proofs")
-		return
-	} else if err != nil {
+	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting root")
+		return
+	} else if len(rr.Root) == 0 {
+		s.sendJSONError(r, w, nil, http.StatusNotFound, "root not found for proofs")
 		return
 	}
 
