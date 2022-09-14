@@ -61,7 +61,7 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 
-	if errors.Is(err, pgx.ErrNoRows) || len(rr.Root) == 0 {
+	if len(rr.Root) == 0 {
 		s.sendJSONError(r, w, nil, http.StatusNotFound, "root not found for proofs")
 		return
 	} else if err != nil {
