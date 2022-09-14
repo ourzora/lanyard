@@ -47,30 +47,25 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 		FROM trees
 		WHERE proofs_array(proofs) <@ proofs_array($1);
 	`
-
 	rr := rootResp{}
 
-	// should only return one row, using QueryContext to verify
+	// should only return one row, using QueryFunc to verify
 	// that's the case and return an error if not (we've had
 	// issues with this in the past)
-	rows, err := s.db.Query(ctx, q, dbQuery)
+	hasRow := false
+	_, err := s.db.QueryFunc(ctx, q, []interface{}{dbQuery}, []interface{}{&rr.Root}, func(qfr pgx.QueryFuncRow) error {
+		if hasRow {
+			return errors.New("multiple rows returned")
+		}
+		hasRow = true
+		return nil
+	})
 
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.Is(err, pgx.ErrNoRows) || len(rr.Root) == 0 {
 		s.sendJSONError(r, w, nil, http.StatusNotFound, "root not found for proofs")
 		return
 	} else if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting root")
-		return
-	}
-
-	defer rows.Close()
-	rows.Next()
-	rows.Scan(&rr.Root)
-
-	// see if there's another row, there shouldn't be, so error
-	// if there is
-	if rows.Next() {
-		s.sendJSONError(r, w, errors.New("multiple roots returned for query"), http.StatusInternalServerError, "multiple roots returned")
 		return
 	}
 
