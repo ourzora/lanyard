@@ -1,7 +1,7 @@
 import { utils } from 'ethers'
 import { MerkleTree } from 'merkletreejs'
 
-const baseUrl = 'http://localhost:8080'
+const baseUrl = process.env.API_URL ?? 'http://localhost:8080'
 
 const createTree = async (
   unhashedLeaves: string[],
@@ -82,7 +82,7 @@ const getProofForIndexedAddress = async (
 
 const getRootFromProof = async (proof: string[]): Promise<string> => {
   const rootRes = await fetch(`${baseUrl}/api/v1/root?proof=${proof.join(',')}`)
-  const resp = await rootRes.json()
+  const resp: { root: string } = await rootRes.json()
   return resp.root
 }
 
@@ -110,19 +110,6 @@ const checkProofEquality = (remote: string[], local: string[]) => {
     )
   }
 }
-
-// health check
-
-const healthRes = await fetch(`${baseUrl}/health`, {
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept-Encoding': 'gzip',
-  },
-})
-
-const version = await healthRes.text()
-console.log('api version', version)
 
 // basic merkle tree
 
