@@ -86,21 +86,21 @@ func TestGetProofFromAddr(t *testing.T) {
 	}
 }
 
-func TestGetRootFromProof(t *testing.T) {
+func TestGetRootsFromProof(t *testing.T) {
 	p, err := client.GetProofFromLeaf(context.Background(), hexutil.MustDecode(basicRoot), basicMerkle[0])
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	root, err := client.GetRootFromProof(context.Background(), p.Proof)
+	resp, err := client.GetRootsFromProof(context.Background(), p.Proof)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if root.Root.String() != basicRoot {
-		t.Fatalf("expected %s, got %s", basicRoot, root.Root.String())
+	if resp.Roots[0].String() != basicRoot {
+		t.Fatalf("expected %s, got %s", basicRoot, resp.Roots[0].String())
 	}
 
 }

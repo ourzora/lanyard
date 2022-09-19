@@ -260,20 +260,22 @@ func (c *Client) GetProofFromAddr(
 	return resp, nil
 }
 
-type RootResponse struct {
-	Root hexutil.Bytes `json:"root"`
+type RootsResponse struct {
+	Roots []hexutil.Bytes `json:"roots"`
 }
 
 // If a Merkle tree has been published to Lanyard,
-// GetRootFromLeaf will return the root of the tree
+// GetRootsFromProof will return the root of the tree
 // based on a proof of a leaf. This endpoint will return
 // ErrNotFound if the tree associated with the
-// leaf has not been published.
-func (c *Client) GetRootFromProof(
+// leaf has not been published. This API response is deprecated
+// as there may be more than one root per proof. Use GetRootsFromProof
+// instead.
+func (c *Client) GetRootsFromProof(
 	ctx context.Context,
 	proof []hexutil.Bytes,
-) (*RootResponse, error) {
-	resp := &RootResponse{}
+) (*RootsResponse, error) {
+	resp := &RootsResponse{}
 
 	if len(proof) == 0 {
 		return nil, xerrors.New("proof must not be empty")
@@ -286,7 +288,7 @@ func (c *Client) GetRootFromProof(
 
 	err := c.sendRequest(
 		ctx, http.MethodGet,
-		fmt.Sprintf("/root?proof=%s",
+		fmt.Sprintf("/roots?proof=%s",
 			strings.Join(pq, ","),
 		),
 		nil, resp,
