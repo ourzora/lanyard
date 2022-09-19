@@ -50,12 +50,12 @@ GET https://lanyard.org/api/v1/proof?root={root}&unhashedLeaf={unhashedLeaf}
 }
 `.trim()
 
-export const rootCode = `
+export const rootsCode = `
 // proof is 0x prefixed, comma separated values
-GET https://lanyard.org/api/v1/root?proof={proof}
+GET https://lanyard.org/api/v1/roots?proof={proof}
 
 // Response body
 {
-  "root": "0x0000000000000000000000000000000000000003" // returns error if not found
+  "roots": ["0x0000000000000000000000000000000000000003"] // returns error if not found
 }
 `.trim()

@@ -80,10 +80,12 @@ const getProofForIndexedAddress = async (
   return await proofRes.json()
 }
 
-const getRootFromProof = async (proof: string[]): Promise<string> => {
-  const rootRes = await fetch(`${baseUrl}/api/v1/root?proof=${proof.join(',')}`)
-  const resp: { root: string } = await rootRes.json()
-  return resp.root
+const getRootsFromProof = async (proof: string[]): Promise<string> => {
+  const rootRes = await fetch(
+    `${baseUrl}/api/v1/roots?proof=${proof.join(',')}`,
+  )
+  const resp: { roots: string[] } = await rootRes.json()
+  return resp.roots
 }
 
 const encode = utils.defaultAbiCoder.encode.bind(utils.defaultAbiCoder)
@@ -230,6 +232,6 @@ checkProofEquality(
   ),
 )
 
-const root = await getRootFromProof(encodedPackedProof)
-console.log('root from proof', root)
-checkRootEquality(root, encodedPackedMerkleRoot)
+const root = await getRootsFromProof(encodedPackedProof)
+console.log('roots from proof', root[0])
+checkRootEquality(root[0], encodedPackedMerkleRoot)
