@@ -55,8 +55,9 @@ func (s *Server) Handler(env, gitSha string) http.Handler {
 	}
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowCredentials: true,
+		AllowedOrigins:     []string{"*"},
+		AllowCredentials:   false,
+		OptionsPassthrough: false,
 	})
 
 	h = c.Handler(h)
