@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { brandUnderlineClasses } from 'utils/theme'
 import PageTitle from 'components/PageTitle'
 import CodeBlock from 'components/CodeBlock'
-import { createCode, lookupCode, proofCode, rootCode } from './codeSnippets'
+import { createCode, lookupCode, proofCode, rootsCode } from './codeSnippets'
 import Section from './Section'
 
 export default function Docs() {
@@ -43,10 +43,10 @@ export default function Docs() {
           <CodeBlock code={proofCode} language="javascript" />
         </Section>
         <Section
-          title="Looking up a root for a given proof"
+          title="Looking up potential roots for a given proof"
           description="A more advanced use but helpful if you just have a proof."
         >
-          <CodeBlock code={rootCode} language="javascript" />
+          <CodeBlock code={rootsCode} language="javascript" />
         </Section>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { utils } from 'ethers'
 import { MerkleTree } from 'merkletreejs'
 
-const baseUrl = 'http://localhost:8080'
+const baseUrl = process.env.API_URL ?? 'http://localhost:8080'
 
 const createTree = async (
   unhashedLeaves: string[],
@@ -80,10 +80,12 @@ const getProofForIndexedAddress = async (
   return await proofRes.json()
 }
 
-const getRootFromProof = async (proof: string[]): Promise<string> => {
-  const rootRes = await fetch(`${baseUrl}/api/v1/root?proof=${proof.join(',')}`)
-  const resp = await rootRes.json()
-  return resp.root
+const getRootsFromProof = async (proof: string[]): Promise<string> => {
+  const rootRes = await fetch(
+    `${baseUrl}/api/v1/roots?proof=${proof.join(',')}`,
+  )
+  const resp: { roots: string[] } = await rootRes.json()
+  return resp.roots
 }
 
 const encode = utils.defaultAbiCoder.encode.bind(utils.defaultAbiCoder)
@@ -110,19 +112,6 @@ const checkProofEquality = (remote: string[], local: string[]) => {
     )
   }
 }
-
-// health check
-
-const healthRes = await fetch(`${baseUrl}/health`, {
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept-Encoding': 'gzip',
-  },
-})
-
-const version = await healthRes.text()
-console.log('api version', version)
 
 // basic merkle tree
 
@@ -243,6 +232,6 @@ checkProofEquality(
   ),
 )
 
-const root = await getRootFromProof(encodedPackedProof)
-console.log('root from proof', root)
-checkRootEquality(root, encodedPackedMerkleRoot)
+const root = await getRootsFromProof(encodedPackedProof)
+console.log('roots from proof', root[0])
+checkRootEquality(root[0], encodedPackedMerkleRoot)

@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strings"
 
@@ -30,6 +29,11 @@ func proofURLToDBQuery(param string) string {
 func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 	type rootResp struct {
 		Root hexutil.Bytes `json:"root"`
+		Note string        `json:"note"`
+	}
+
+	type rootsResp struct {
+		Roots []hexutil.Bytes `json:"roots"`
 	}
 
 	var (
@@ -45,23 +49,32 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 	const q = `
 		SELECT root
 		FROM trees
-		WHERE proofs_array(proofs) @> proofs_array($1)
-		LIMIT 1
+		WHERE proofs_array(proofs) @> proofs_array($1);
 	`
+	roots := make([]hexutil.Bytes, 0)
+	rb := make(hexutil.Bytes, 0)
 
-	rr := rootResp{}
-	err := s.db.QueryRow(ctx, q, dbQuery).Scan(
-		&rr.Root,
-	)
-	if errors.Is(err, pgx.ErrNoRows) {
-		s.sendJSONError(r, w, nil, http.StatusNotFound, "root not found for proofs")
-		w.Header().Set("Cache-Control", "public, max-age=60")
-		return
-	} else if err != nil {
+
+
+	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting root")
+		return
+	} else if len(roots) == 0 { // db.QueryFunc doesn't return pgx.ErrNoRows
+    w.Header().Set("Cache-Control", "public, max-age=60")
+	  s.sendJSONError(r, w, nil, http.StatusNotFound, "root not found for proofs")
 		return
 	}
 
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	s.sendJSON(r, w, rr)
+
+	if strings.HasPrefix(r.URL.Path, "/api/v1/roots") {
+		s.sendJSON(r, w, rootsResp{Roots: roots})
+	} else {
+		// The original functionality of this endpoint, getting one root for
+		// a given proof, is deprecated. This is because for smaller trees,
+		// there are often collisions with the same root for different proofs.
+		// This bit of code is for backwards compatibility.
+		const note = `This endpoint is deprecated. For smaller trees, there are often collisions with the same root for different proofs. Please use the /v1/api/roots endpoint instead.`
+		s.sendJSON(r, w, rootResp{Root: roots[0], Note: note})
+	}
 }
