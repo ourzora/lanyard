@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/jackc/pgx/v4"
 )
 
 func proofURLToDBQuery(param string) string {
@@ -54,15 +53,11 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 	roots := make([]hexutil.Bytes, 0)
 	rb := make(hexutil.Bytes, 0)
 
-	_, err := s.db.QueryFunc(ctx, q, []interface{}{dbQuery}, []interface{}{&rb}, func(qfr pgx.QueryFuncRow) error {
-		roots = append(roots, rb)
-		return nil
-	})
-
 	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting root")
 		return
 	} else if len(roots) == 0 { // db.QueryFunc doesn't return pgx.ErrNoRows
+		w.Header().Set("Cache-Control", "public, max-age=60")
 		s.sendJSONError(r, w, nil, http.StatusNotFound, "root not found for proofs")
 		return
 	}

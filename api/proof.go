@@ -55,6 +55,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, nil, http.StatusNotFound, "tree not found")
+		w.Header().Set("Cache-Control", "public, max-age=60")
 		return
 	} else if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "selecting proof")
@@ -62,8 +63,11 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// cache for 1 year if we're returning an unhashed leaf proof
+	// or 60 seconds for an address proof
 	if leaf != "" {
 		w.Header().Set("Cache-Control", "public, max-age=31536000")
+	} else {
+		w.Header().Set("Cache-Control", "public, max-age=60")
 	}
 	s.sendJSON(r, w, resp)
 }
