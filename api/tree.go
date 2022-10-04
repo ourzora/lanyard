@@ -99,7 +99,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 	)
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		s.sendJSONError(r, w, err, http.StatusBadRequest, "unhashedLeaves must be a list of hex strings")
+		s.sendJSONError(r, w, err, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	switch len(req.Leaves) {
