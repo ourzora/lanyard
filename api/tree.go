@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/contextwtf/lanyard/merkle"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -113,19 +112,9 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 
 	var leaves [][]byte
 	for _, l := range req.Leaves {
-		// if length uneven, pad with 0. this behavior mimics the behavior of
-		// popular javascript libraries like ethers.js
-		if len(l)%2 != 0 {
-			l = strings.Replace(l, "0x", "0x0", 1)
-		}
-
-		h, err := hexutil.Decode(l)
-		if err != nil {
-			s.sendJSONError(r, w, err, http.StatusBadRequest, "unhashedLeaves must be a list of hex strings")
-			return
-		}
-
-		leaves = append(leaves, h)
+		// use the go-ethereum HexDecode method because it is more
+		// lenient and will allow for odd-length hex strings (by padding them)
+		leaves = append(leaves, common.FromHex(l))
 	}
 
 	tree := merkle.New(leaves)
