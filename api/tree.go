@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/contextwtf/lanyard/merkle"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -82,9 +83,9 @@ func encodeProof(p [][]byte) []string {
 }
 
 type createTreeReq struct {
-	Leaves []hexutil.Bytes `json:"unhashedLeaves"`
-	Ltd    []string        `json:"leafTypeDescriptor"`
-	Packed bool            `json:"packedEncoding"`
+	Leaves []string `json:"unhashedLeaves"`
+	Ltd    []string `json:"leafTypeDescriptor"`
+	Packed bool     `json:"packedEncoding"`
 }
 
 type createTreeResp struct {
@@ -110,11 +111,22 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//convert []hexutil.Bytes to [][]byte
 	var leaves [][]byte
-	for i := range req.Leaves {
-		leaves = append(leaves, req.Leaves[i])
+	for _, l := range req.Leaves {
+		// if length uneven, pad with 0
+		if len(l)%2 != 0 {
+			l = strings.Replace(l, "0x", "0x0", 1)
+		}
+
+		h, err := hexutil.Decode(l)
+		if err != nil {
+			s.sendJSONError(r, w, err, http.StatusBadRequest, "unhashedLeaves must be a list of hex strings")
+			return
+		}
+
+		leaves = append(leaves, h)
 	}
+
 	tree := merkle.New(leaves)
 
 	type proofItem struct {
@@ -123,7 +135,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		Proof []string `json:"proof"`
 	}
 	var proofs = []proofItem{}
-	for _, l := range req.Leaves {
+	for _, l := range leaves {
 		pf := tree.Proof(l)
 		if !merkle.Valid(tree.Root(), pf, l) {
 			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Unable to generate proof for tree")
@@ -148,7 +160,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 	`
 	_, err := s.db.Exec(ctx, q,
 		tree.Root(),
-		req.Leaves,
+		leaves,
 		req.Ltd,
 		req.Packed,
 		proofs,
