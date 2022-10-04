@@ -113,7 +113,8 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 
 	var leaves [][]byte
 	for _, l := range req.Leaves {
-		// if length uneven, pad with 0
+		// if length uneven, pad with 0. this behavior mimics the behavior of
+		// popular javascript libraries like ethers.js
 		if len(l)%2 != 0 {
 			l = strings.Replace(l, "0x", "0x0", 1)
 		}
