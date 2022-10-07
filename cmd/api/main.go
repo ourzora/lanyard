@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
+	"time"
 
 	"github.com/contextwtf/lanyard/api"
 	"github.com/contextwtf/lanyard/api/migrations"
@@ -30,6 +31,20 @@ func check(err error) {
 		fmt.Fprintf(os.Stderr, "processor error: %s", err)
 		debug.PrintStack()
 		os.Exit(1)
+	}
+}
+
+func copyTrees(ctx context.Context, db *pgxpool.Pool) {
+	t, err := db.Exec(ctx, `
+			insert into trees_proofs
+			(select root, proofs from trees
+			where root not in (select root from trees_proofs))
+			`)
+
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Msg("failed to sync proof index")
+	} else if t.RowsAffected() > 0 {
+		log.Ctx(ctx).Info().Int64("rows", t.RowsAffected()).Msg("synced proof index")
 	}
 }
 
@@ -89,6 +104,14 @@ func main() {
 	check(mdb.Close())
 
 	s := api.New(db)
+
+	// copy trees to proof lookup table asynchronously - performance
+	// optimization to allow for inserting large trees quickly
+	go func() {
+		for ; ; time.Sleep(time.Second) {
+			copyTrees(ctx, db)
+		}
+	}()
 
 	const defaultListen = ":8080"
 	listen := os.Getenv("LISTEN")

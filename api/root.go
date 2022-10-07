@@ -48,7 +48,7 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 
 	const q = `
 		SELECT root
-		FROM trees
+		FROM trees_proofs
 		WHERE proofs_array(proofs) @> proofs_array($1);
 	`
 	roots := make([]hexutil.Bytes, 0)
