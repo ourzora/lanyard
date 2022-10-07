@@ -105,7 +105,8 @@ func main() {
 
 	s := api.New(db)
 
-	// copy trees to proof lookup table asynchronously
+	// copy trees to proof lookup table asynchronously - performance
+	// optimization to allow for inserting large trees quickly
 	go func() {
 		for ; ; time.Sleep(time.Second) {
 			copyTrees(ctx, db)
