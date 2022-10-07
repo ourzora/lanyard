@@ -90,6 +90,8 @@ func main() {
 
 	s := api.New(db)
 
+	s.SyncProofIdx(ctx)
+
 	const defaultListen = ":8080"
 	listen := os.Getenv("LISTEN")
 	if listen == "" {

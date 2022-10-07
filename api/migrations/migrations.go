@@ -104,4 +104,16 @@ var Migrations = []migrate.Migration{
 		DROP INDEX "trees_proofs_idx";
 	`,
 	},
+	{
+		Name: "2022-10-07.0.trees-proofs.sql",
+		SQL: `
+		DROP INDEX proofs_arr_idx;
+		CREATE TABLE trees_proofs (
+			root bytea PRIMARY KEY,
+			proofs jsonb,
+			inserted_at timestamp with time zone NOT NULL DEFAULT now()
+		);
+		CREATE INDEX proofs_arr_idx ON trees_proofs USING GIN ((proofs_array(proofs)));
+		`,
+	},
 }
