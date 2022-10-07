@@ -16,8 +16,8 @@ func (s *Server) SyncProofIdx(ctx context.Context) {
 
 	go func() {
 		for ; ; time.Sleep(time.Second) {
-			locked := lock.TryLock()
-			if !locked {
+			unlocked := lock.TryLock()
+			if !unlocked {
 				continue
 			}
 			t, err := s.db.Exec(ctx, `
