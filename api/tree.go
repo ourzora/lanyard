@@ -120,6 +120,28 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tree := merkle.New(leaves)
+	root := tree.Root()
+	var (
+		exists bool
+	)
+
+	const existsQ = `
+	select exists(
+		select 1 from trees where root = $1
+	)
+	`
+
+	err := s.db.QueryRow(ctx, existsQ, root).Scan(&exists)
+
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "failed to check if tree already exists")
+		return
+	}
+
+	if exists {
+		s.sendJSON(r, w, createTreeResp{hexutil.Encode(root)})
+		return
+	}
 
 	type proofItem struct {
 		Leaf  string   `json:"leaf"`
@@ -153,7 +175,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 			return nil
 		})
 	}
-	err := eg.Wait()
+	err = eg.Wait()
 	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusBadRequest, "generating proofs for tree")
 		return
@@ -182,7 +204,8 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.sendJSON(r, w, createTreeResp{hexutil.Encode(tree.Root())})
+	w.WriteHeader(http.StatusCreated)
+	s.sendJSON(r, w, createTreeResp{hexutil.Encode(root)})
 }
 
 type getTreeResp struct {
