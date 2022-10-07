@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sync"
 
 	"github.com/contextwtf/lanyard/merkle"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jackc/pgx/v4"
+	"golang.org/x/sync/errgroup"
 )
 
 func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
@@ -124,19 +126,39 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		Addr  string   `json:"addr"`
 		Proof []string `json:"proof"`
 	}
-	var proofs = []proofItem{}
+	var (
+		proofs = []proofItem{}
+		eg     errgroup.Group
+		pm     sync.Mutex
+	)
 	for _, l := range leaves {
-		pf := tree.Proof(l)
-		if !merkle.Valid(tree.Root(), pf, l) {
-			s.sendJSONError(r, w, nil, http.StatusBadRequest, "Unable to generate proof for tree")
-			return
-		}
-		proofs = append(proofs, proofItem{
-			Leaf:  hexutil.Encode(l),
-			Addr:  leaf2Addr(l, req.Ltd, req.Packed).Hex(),
-			Proof: encodeProof(pf),
+		l := l //avoid capture
+		eg.Go(func() error {
+			pf := tree.Proof(l)
+			if !merkle.Valid(tree.Root(), pf, l) {
+				return errors.New("invalid proof for tree")
+			}
+			var (
+				addr         = leaf2Addr(l, req.Ltd, req.Packed).Hex()
+				encodedLeaf  = hexutil.Encode(l)
+				encodedProof = encodeProof(pf)
+			) // encode outside of lock
+			pm.Lock()
+			proofs = append(proofs, proofItem{
+				Addr:  addr,
+				Leaf:  encodedLeaf,
+				Proof: encodedProof,
+			})
+			pm.Unlock()
+			return nil
 		})
 	}
+	err := eg.Wait()
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusBadRequest, "generating proofs for tree")
+		return
+	}
+
 	const q = `
 		INSERT INTO trees(
 			root,
@@ -148,7 +170,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		ON CONFLICT (root)
 		DO NOTHING
 	`
-	_, err := s.db.Exec(ctx, q,
+	_, err = s.db.Exec(ctx, q,
 		tree.Root(),
 		leaves,
 		req.Ltd,
