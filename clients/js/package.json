@@ -7,7 +7,7 @@
   "author": "Context Systems, Inc",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist && tsc && esbuild lib/*.ts --platform=node --outdir=dist --format=cjs"
+    "prepare": "rm -rf dist && tsc && esbuild lib/*.ts --platform=node --outdir=dist --format=cjs"
   },
   "dependencies": {
     "isomorphic-fetch": "^3.0.0"
