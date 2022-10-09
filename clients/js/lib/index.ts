@@ -31,13 +31,10 @@ const client = async (method: 'GET' | 'POST', path: string, data?: any) => {
 
 export const createTree = (
   req: CreateTreeRequest,
-): Promise<CreateTreeResponse> => {
-  return client('POST', 'tree', req)
-}
+): Promise<CreateTreeResponse> => client('POST', 'tree', req)
 
-export const getTree = (merkleRoot: string): Promise<GetTreeResponse> => {
-  return client('GET', `tree?root=${encodeURIComponent(merkleRoot)}`)
-}
+export const getTree = (merkleRoot: string): Promise<GetTreeResponse> =>
+  client('GET', `tree?root=${encodeURIComponent(merkleRoot)}`)
 
 export const getProof = (req: GetProofRequest): Promise<GetProofResponse> => {
   const { merkleRoot, unhashedLeaf } = req
@@ -49,9 +46,7 @@ export const getProof = (req: GetProofRequest): Promise<GetProofResponse> => {
   )
 }
 
-export const getRoots = (proof: string[]): Promise<GetRootsResponse> => {
-  const _p = encodeURIComponent(proof.join(','))
-  return client('GET', `roots?proof=${_p}`)
-}
+export const getRoots = (proof: string[]): Promise<GetRootsResponse> =>
+  client('GET', `roots?proof=${encodeURIComponent(proof.join(','))}`)
 
 export * from './types'
