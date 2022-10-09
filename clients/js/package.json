@@ -1,6 +1,6 @@
 {
-  "name": "lanyard-client",
-  "version": "0.0.1",
+  "name": "lanyard",
+  "version": "1.1.0",
   "description": "lanyard api client",
   "main": "dist/index.js",
   "repository": "https://github.com/contextwtf/lanyard",

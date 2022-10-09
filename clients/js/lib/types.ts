@@ -15,6 +15,11 @@ export interface GetTreeResponse {
   packedEncoding: boolean | null
 }
 
+export interface GetProofRequest {
+  unhashedLeaf: string
+  merkleRoot: string
+}
+
 export interface GetProofResponse {
   proof: string[]
   unhashedLeaf: string

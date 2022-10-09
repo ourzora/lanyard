@@ -2,6 +2,7 @@ import fetch from 'isomorphic-fetch'
 import {
   CreateTreeRequest,
   CreateTreeResponse,
+  GetProofRequest,
   GetProofResponse,
   GetRootsResponse,
   GetTreeResponse,
@@ -28,30 +29,29 @@ const client = async (method: 'GET' | 'POST', path: string, data?: any) => {
   return resp.json()
 }
 
-export const CreateTree = (
+export const createTree = (
   req: CreateTreeRequest,
 ): Promise<CreateTreeResponse> => {
   return client('POST', 'tree', req)
 }
 
-export const GetTree = (merkleRoot: string): Promise<GetTreeResponse> => {
+export const getTree = (merkleRoot: string): Promise<GetTreeResponse> => {
   return client('GET', `tree?root=${encodeURIComponent(merkleRoot)}`)
 }
 
-export const GetProof = (
-  root: string,
-  unhashedLeaf: string,
-): Promise<GetProofResponse> => {
+export const getProof = (req: GetProofRequest): Promise<GetProofResponse> => {
+  const { merkleRoot, unhashedLeaf } = req
   return client(
     'GET',
-    `proof?root=${encodeURIComponent(root)}&leaf=${encodeURIComponent(
+    `proof?root=${encodeURIComponent(merkleRoot)}&leaf=${encodeURIComponent(
       unhashedLeaf,
     )}`,
   )
 }
 
-export const GetRoots = (proof: string): Promise<GetRootsResponse> => {
-  return client('GET', `roots?proof=${encodeURIComponent(proof)}`)
+export const getRoots = (proof: string[]): Promise<GetRootsResponse> => {
+  const _p = encodeURIComponent(proof.join(','))
+  return client('GET', `roots?proof=${_p}`)
 }
 
 export * from './types'
