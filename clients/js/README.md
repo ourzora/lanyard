@@ -15,6 +15,8 @@ const resp = await lanyard.createTree({
     '0x7e5507281f62c0f8d666beaea212751cd88994b8',
     '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
   ],
+  // leafTypeDescriptor: ["address"] // optional, used for abi encoded types
+  // packedEncoding: boolean // optional, default false
 })
 
 console.log(resp.merkleRoot)
