@@ -1,25 +1,25 @@
 export interface CreateTreeRequest {
-  unhashedLeaves: string[];
-  leafTypeDescriptor?: string[];
-  packedEncoding?: boolean;
+  unhashedLeaves: string[]
+  leafTypeDescriptor?: string[]
+  packedEncoding?: boolean
 }
 
 export interface CreateTreeResponse {
-  merkleRoot: string;
+  merkleRoot: string
 }
 
 export interface GetTreeResponse {
-  unhashedLeaves: string[];
-  leafCount: number;
-  leafTypeDescriptor: string[] | null;
-  packedEncoding: boolean | null;
+  unhashedLeaves: string[]
+  leafCount: number
+  leafTypeDescriptor: string[] | null
+  packedEncoding: boolean | null
 }
 
 export interface GetProofResponse {
-  proof: string[];
-  unhashedLeaf: string;
+  proof: string[]
+  unhashedLeaf: string
 }
 
 export interface GetRootsResponse {
-  roots: string[];
+  roots: string[]
 }
