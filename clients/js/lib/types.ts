@@ -8,28 +8,29 @@ export interface CreateTreeResponse {
   merkleRoot: string
 }
 
-export interface GetTreeResponse {
+export type GetTreeResponse = {
   unhashedLeaves: string[]
   leafCount: number
   leafTypeDescriptor: string[] | null
   packedEncoding: boolean | null
-}
+} | null
 
-export interface GetProofByLeaf {
+export type GetProofByLeaf = {
   merkleRoot: string
   unhashedLeaf: string
-}
-export interface GetProofByAddress {
+} | null
+
+export type GetProofByAddress = {
   merkleRoot: string
   address: string
-}
+} | null
 
 export type GetProofRequest = GetProofByLeaf | GetProofByAddress
 
-export interface GetProofResponse {
+export type GetProofResponse = {
   proof: string[]
   unhashedLeaf: string
-}
+} | null
 
 export interface GetRootsResponse {
   roots: string[]
