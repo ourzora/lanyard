@@ -28,6 +28,15 @@ const client = async (method: 'GET' | 'POST', path: string, data?: any) => {
   }
 
   const resp = await fetch(baseUrl + path, opts)
+  if (resp.status > 299) {
+    if (method === 'GET') {
+      return null
+    }
+    throw new Error(
+      `Request failed with status ${resp.status}: ${await resp.json()}`,
+    )
+  }
+
   return resp.json()
 }
 
