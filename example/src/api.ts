@@ -1,92 +1,6 @@
 import { utils } from 'ethers'
 import { MerkleTree } from 'merkletreejs'
-
-const baseUrl = process.env.API_URL ?? 'http://localhost:8080'
-
-const createTree = async (
-  unhashedLeaves: string[],
-  leafTypeDescriptor?: string[],
-  packedEncoding?: boolean,
-): Promise<{ merkleRoot: string }> => {
-  const encodedTreeRes = await fetch(`${baseUrl}/api/v1/tree`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept-Encoding': 'gzip',
-    },
-    body: JSON.stringify({
-      unhashedLeaves,
-      leafTypeDescriptor,
-      packedEncoding,
-    }),
-  })
-
-  return await encodedTreeRes.json()
-}
-
-const getTree = async (
-  merkleRoot: string,
-): Promise<{
-  unhashedLeaves: string[]
-  leafCount: number
-  leafTypeDescriptor: string[] | null
-  packedEncoding: boolean | null
-}> => {
-  const getTreeRes = await fetch(`${baseUrl}/api/v1/tree?root=${merkleRoot}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept-Encoding': 'gzip',
-    },
-  })
-
-  return await getTreeRes.json()
-}
-
-const getProofForUnhashedLeaf = async (
-  merkleRoot: string,
-  unhashedLeaf: string,
-): Promise<{ proof: string[]; unhashedLeaf: string | null }> => {
-  const proofRes = await fetch(
-    `${baseUrl}/api/v1/proof?root=${merkleRoot}&unhashedLeaf=${unhashedLeaf}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept-Encoding': 'gzip',
-      },
-    },
-  )
-
-  return await proofRes.json()
-}
-
-/** When possible, use `unhashedLeaf` instead of `address` */
-const getProofForIndexedAddress = async (
-  merkleRoot: string,
-  address: string,
-): Promise<{ proof: string[]; unhashedLeaf: string | null }> => {
-  const proofRes = await fetch(
-    `${baseUrl}/api/v1/proof?root=${merkleRoot}&address=${address}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept-Encoding': 'gzip',
-      },
-    },
-  )
-
-  return await proofRes.json()
-}
-
-const getRootsFromProof = async (proof: string[]): Promise<string> => {
-  const rootRes = await fetch(
-    `${baseUrl}/api/v1/roots?proof=${proof.join(',')}`,
-  )
-  const resp: { roots: string[] } = await rootRes.json()
-  return resp.roots
-}
+import { createTree, getTree, getRoots, getProof } from 'lanyard'
 
 const encode = utils.defaultAbiCoder.encode.bind(utils.defaultAbiCoder)
 const encodePacked = utils.solidityPack
@@ -123,7 +37,7 @@ const unhashedLeaves = [
   '0x0000000000000000000000000000000000000005',
 ]
 
-const { merkleRoot: basicMerkleRoot } = await createTree(unhashedLeaves)
+const { merkleRoot: basicMerkleRoot } = await createTree({ unhashedLeaves })
 
 console.log('basic merkle root', basicMerkleRoot)
 checkRootEquality(basicMerkleRoot, makeMerkleTree(unhashedLeaves).getHexRoot())
@@ -131,10 +45,12 @@ checkRootEquality(basicMerkleRoot, makeMerkleTree(unhashedLeaves).getHexRoot())
 const basicTree = await getTree(basicMerkleRoot)
 console.log('basic leaf count', basicTree.leafCount)
 
-const { proof: basicProof } = await getProofForUnhashedLeaf(
-  basicMerkleRoot,
-  unhashedLeaves[0],
-)
+console.log(basicMerkleRoot, unhashedLeaves[0])
+
+const { proof: basicProof } = await getProof({
+  merkleRoot: basicMerkleRoot,
+  unhashedLeaf: unhashedLeaves[0],
+})
 
 console.log('proof', basicProof)
 checkProofEquality(
@@ -161,11 +77,11 @@ const encodedLeafData = leafData.map((leafData) =>
   encode(['address', 'uint256', 'uint256'], leafData),
 )
 
-const { merkleRoot: encodedMerkleRoot } = await createTree(
-  encodedLeafData,
-  ['address', 'uint256', 'uint256'],
-  false,
-)
+const { merkleRoot: encodedMerkleRoot } = await createTree({
+  unhashedLeaves: encodedLeafData,
+  leafTypeDescriptor: ['address', 'uint256', 'uint256'],
+  packedEncoding: false,
+})
 
 console.log('encoded tree', encodedMerkleRoot)
 checkRootEquality(
@@ -173,10 +89,10 @@ checkRootEquality(
   makeMerkleTree(encodedLeafData).getHexRoot(),
 )
 
-const { proof: encodedProof } = await getProofForUnhashedLeaf(
-  encodedMerkleRoot,
-  encodedLeafData[0],
-)
+const { proof: encodedProof } = await getProof({
+  merkleRoot: encodedMerkleRoot,
+  unhashedLeaf: encodedLeafData[0],
+})
 
 console.log('encoded proof', encodedProof)
 checkProofEquality(
@@ -192,11 +108,11 @@ const encodedPackedLeafData = leafData.map((leafData) =>
   encodePacked(['address', 'uint256', 'uint256'], leafData),
 )
 
-const { merkleRoot: encodedPackedMerkleRoot } = await createTree(
-  encodedPackedLeafData,
-  ['address', 'uint256', 'uint256'],
-  true,
-)
+const { merkleRoot: encodedPackedMerkleRoot } = await createTree({
+  unhashedLeaves: encodedPackedLeafData,
+  leafTypeDescriptor: ['address', 'uint256', 'uint256'],
+  packedEncoding: true,
+})
 
 console.log('encoded packed tree', encodedPackedMerkleRoot)
 checkRootEquality(
@@ -204,10 +120,10 @@ checkRootEquality(
   makeMerkleTree(encodedPackedLeafData).getHexRoot(),
 )
 
-const { proof: encodedPackedProof } = await getProofForUnhashedLeaf(
-  encodedPackedMerkleRoot,
-  encodedPackedLeafData[0],
-)
+const { proof: encodedPackedProof } = await getProof({
+  merkleRoot: encodedPackedMerkleRoot,
+  unhashedLeaf: encodedPackedLeafData[0],
+})
 
 console.log('encoded packed proof', encodedPackedProof)
 checkProofEquality(
@@ -217,10 +133,11 @@ checkProofEquality(
   ),
 )
 
-const { proof: encodedPackedProofByAddress } = await getProofForIndexedAddress(
-  encodedPackedMerkleRoot,
-  num2Addr(1),
-)
+const { proof: encodedPackedProofByAddress } = await getProof({
+  merkleRoot: encodedPackedMerkleRoot,
+  address: num2Addr(1),
+})
+
 console.log(
   'encoded packed proof by indexed address',
   encodedPackedProofByAddress,
@@ -232,6 +149,6 @@ checkProofEquality(
   ),
 )
 
-const root = await getRootsFromProof(encodedPackedProof)
-console.log('roots from proof', root[0])
-checkRootEquality(root[0], encodedPackedMerkleRoot)
+const root = await getRoots(encodedPackedProof)
+console.log('roots from proof', root.roots[0])
+checkRootEquality(root.roots[0], encodedPackedMerkleRoot)
