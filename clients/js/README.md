@@ -2,6 +2,8 @@
 
 lanyard is a javascript client for [lanyard.org](https://lanyard.org) – a decentralized way to create and consume allowlists.
 
+http is handled by [isomorphic-fetch](https://www.npmjs.com/package/isomorphic-fetch); this package targets browsers and backend servers.
+
 ## functionality
 
 ### creating an allowlist
