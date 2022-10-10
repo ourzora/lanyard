@@ -1,0 +1,19 @@
+{
+  "name": "lanyard",
+  "version": "1.1.0",
+  "description": "lanyard api client",
+  "main": "dist/index.js",
+  "repository": "https://github.com/contextwtf/lanyard",
+  "author": "Context Systems, Inc",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "rm -rf dist && tsc && esbuild lib/*.ts --platform=node --outdir=dist --format=cjs"
+  },
+  "dependencies": {
+    "isomorphic-fetch": "^3.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.15.10",
+    "typescript": "^4.8.4"
+  }
+}
