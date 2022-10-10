@@ -2,6 +2,8 @@ import fetch from 'isomorphic-fetch'
 import {
   CreateTreeRequest,
   CreateTreeResponse,
+  GetProofByAddress,
+  GetProofByLeaf,
   GetProofRequest,
   GetProofResponse,
   GetRootsResponse,
@@ -37,13 +39,17 @@ export const getTree = (merkleRoot: string): Promise<GetTreeResponse> =>
   client('GET', `tree?root=${encodeURIComponent(merkleRoot)}`)
 
 export const getProof = (req: GetProofRequest): Promise<GetProofResponse> => {
-  const { merkleRoot, unhashedLeaf } = req
-  return client(
-    'GET',
-    `proof?root=${encodeURIComponent(merkleRoot)}&leaf=${encodeURIComponent(
-      unhashedLeaf,
-    )}`,
-  )
+  let url = `proof?root=${encodeURIComponent(req.merkleRoot)}`
+
+  if ((req as GetProofByAddress).address) {
+    url += `&address=${encodeURIComponent((req as GetProofByAddress).address)}`
+  } else {
+    url += `&unhashedLeaf=${encodeURIComponent(
+      (req as GetProofByLeaf).unhashedLeaf,
+    )}`
+  }
+
+  return client('GET', url)
 }
 
 export const getRoots = (proof: string[]): Promise<GetRootsResponse> =>
