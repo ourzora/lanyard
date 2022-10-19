@@ -12,7 +12,7 @@ export default function Docs() {
         <PageTitle noPadding>API Documentation</PageTitle>
         <p className="font-bold mt-6">Javascript and Go</p>
         <p className="mt-4">
-          The easiest way to get started with Lanyard are our client libraries.
+          The easiest way to get started with integrating Lanyard are our client libraries.
           We have a{' '}
           <a
             target="_blank"

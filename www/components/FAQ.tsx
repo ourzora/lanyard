@@ -72,7 +72,26 @@ export default function FAQ() {
           <Link href="/docs">
             <a className={brandUnderlineClasses}>here</a>
           </Link>{' '}
-          so your creators’ allowlists work with Lanyard.
+          so your creators’ allowlists work with Lanyard. To make integrating
+          Lanyard easier, we also have a{' '}
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://www.npmjs.com/package/lanyard"
+            className={brandUnderlineClasses}
+          >
+            npm package
+          </a>{' '}
+          (works on both Node.js and the browser) and a{' '}
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://pkg.go.dev/github.com/contextwtf/lanyard/api"
+            className={brandUnderlineClasses}
+          >
+            Go client
+          </a>
+          .
         </Answer>
       </QandA>
       <QandA>
