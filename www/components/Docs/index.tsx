@@ -10,6 +10,31 @@ export default function Docs() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col mb-5 sm:mb-10">
         <PageTitle noPadding>API Documentation</PageTitle>
+        <p className="font-bold mt-6">Client libraries</p>
+        <p className="mt-4">
+          The easiest way to get started with integrating Lanyard are our client
+          libraries. We have a{' '}
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://www.npmjs.com/package/lanyard"
+            className={brandUnderlineClasses}
+          >
+            npm package
+          </a>{' '}
+          (works on both Node.js and the browser) and a{' '}
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://pkg.go.dev/github.com/contextwtf/lanyard/api"
+            className={brandUnderlineClasses}
+          >
+            Go client
+          </a>
+          .
+        </p>
+        <p className="font-bold mt-4">Solidity</p>
+
         <p className="mt-4 mb-10">
           Looking for an example on how to implement Merkle roots in your
           contract?{' '}
