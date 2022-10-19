@@ -10,10 +10,10 @@ export default function Docs() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col mb-5 sm:mb-10">
         <PageTitle noPadding>API Documentation</PageTitle>
-        <p className="font-bold mt-6">Javascript and Go</p>
+        <p className="font-bold mt-6">Client libraries</p>
         <p className="mt-4">
-          The easiest way to get started with integrating Lanyard are our client libraries.
-          We have a{' '}
+          The easiest way to get started with integrating Lanyard are our client
+          libraries. We have a{' '}
           <a
             target="_blank"
             rel="noopener noreferrer"
