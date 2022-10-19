@@ -26,7 +26,7 @@ export default function Docs() {
           <a
             target="_blank"
             rel="noopener noreferrer"
-            href="https://pkg.go.dev/github.com/contextwtf/lanyard/api"
+            href="https://pkg.go.dev/github.com/contextwtf/lanyard/clients/go/lanyard"
             className={brandUnderlineClasses}
           >
             Go client
