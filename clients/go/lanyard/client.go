@@ -80,7 +80,7 @@ func (c *Client) sendRequest(
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "lanyard-go+v1.0.0")
+	req.Header.Set("User-Agent", "lanyard-go+v1.0.3")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
