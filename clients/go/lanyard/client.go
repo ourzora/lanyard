@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"golang.org/x/xerrors"
 )
@@ -299,4 +301,52 @@ func (c *Client) GetRootsFromProof(
 	}
 
 	return resp, nil
+}
+
+// With a given leaf and type descriptor, decode an address
+func Leaf2Addr(leaf []byte, ltd []string, packed bool) common.Address {
+	if len(ltd) == 0 || (len(ltd) == 1 && ltd[0] == "address") {
+		return common.BytesToAddress(leaf)
+	}
+	if packed {
+		return addrPacked(leaf, ltd)
+	}
+	return addrUnpacked(leaf, ltd)
+}
+
+func addrUnpacked(leaf []byte, ltd []string) common.Address {
+	var addrStart, pos int
+	for _, desc := range ltd {
+		if desc == "address" {
+			addrStart = pos
+			break
+		}
+		pos += 32
+	}
+	if len(leaf) >= addrStart+32 {
+		return common.BytesToAddress(leaf[addrStart:(addrStart + 32)])
+	}
+	return common.Address{}
+}
+
+func addrPacked(leaf []byte, ltd []string) common.Address {
+	var addrStart, pos int
+	for _, desc := range ltd {
+		t, err := abi.NewType(desc, "", nil)
+		if err != nil {
+			return common.Address{}
+		}
+		if desc == "address" {
+			addrStart = pos
+			break
+		}
+		pos += int(t.GetType().Size())
+	}
+	if addrStart == 0 && pos != 0 {
+		return common.Address{}
+	}
+	if len(leaf) >= addrStart+20 {
+		return common.BytesToAddress(leaf[addrStart:(addrStart + 20)])
+	}
+	return common.Address{}
 }
