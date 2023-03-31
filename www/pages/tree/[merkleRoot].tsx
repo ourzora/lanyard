@@ -6,6 +6,7 @@ import {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from 'next'
+import Link from 'next/link'
 import { getMerkleTree, TreeResponse } from 'utils/api'
 import { dmMintFunTwitterUrl } from 'utils/constants'
 import { brandUnderlineClasses } from 'utils/theme'
@@ -27,6 +28,13 @@ export default function MerkleRootPage({
         </PageTitle>
         <div className="font-bold">
           <CodeBlock language="txt" code={merkleRoot} oneLiner />
+        </div>
+        <div>
+          The entire list of addresses in the allowlist can be found on the{' '}
+          <Link href={`/membership/${merkleRoot}`} passHref>
+            <a className={brandUnderlineClasses}>membership page</a>
+          </Link>{' '}
+          for your Merkle root.
         </div>
         <div>
           Wire up your Merkle root with the guide below. If you need help,{' '}

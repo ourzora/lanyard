@@ -42,6 +42,13 @@ export default function MerkleRootPage({
           <CodeBlock language="txt" code={merkleRoot} oneLiner />
         </div>
         <div>
+          The entire list of addresses in the allowlist can be found on the{' '}
+          <Link href={`/membership/${merkleRoot}`} passHref>
+            <a className={brandUnderlineClasses}>membership page</a>
+          </Link>{' '}
+          for your Merkle root.
+        </div>
+        <div>
           Wire up your Merkle root with the guide below. If you need help,{' '}
           <a
             href={dmMintFunTwitterUrl}
