@@ -16,6 +16,8 @@ module.exports = {
       colors: {
         brand: '#6DFA8C',
         'brand-light': '#F0FFEB',
+        error: '#FA6D6D',
+        'error-light': '#FFECEB',
       },
     },
   },

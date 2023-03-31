@@ -43,6 +43,14 @@ const resolveEnsDomainsBatch = async (
   }, {} as { [name: string]: string })
 }
 
+export const resolveEnsDomain = async (ensName: string): Promise<string> => {
+  const domains = await resolveEnsDomainsBatch([ensName])
+  if (!domains[ensName]) {
+    throw new Error(`No address found for ENS name ${ensName}`)
+  }
+  return domains[ensName]
+}
+
 export const resolveEnsDomains = async (
   ensNames: string[],
 ): Promise<{ [name: string]: string }> => {
@@ -64,3 +72,5 @@ const chunk = (arr: any[], size: number): any[][] => {
   }
   return chunks
 }
+
+export const isENSLike = (query: string) => query.endsWith('.eth')
