@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@react-hook/async": "^3.1.1",
+    "@tanstack/react-virtual": "^3.0.0-beta.54",
     "assertate": "^2.3.4",
     "classnames": "^2.3.1",
     "lodash": "^4.17.21",
