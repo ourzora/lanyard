@@ -7,6 +7,7 @@ import {
   InferGetServerSidePropsType,
 } from 'next'
 import { getMerkleTree, TreeResponse } from 'utils/api'
+import { dmMintFunTwitterUrl } from 'utils/constants'
 import { brandUnderlineClasses } from 'utils/theme'
 
 type Props = {
@@ -30,12 +31,12 @@ export default function MerkleRootPage({
         <div>
           Wire up your Merkle root with the guide below. If you need help,{' '}
           <a
-            href="https://discord.gg/context"
+            href={dmMintFunTwitterUrl}
             target="_blank"
             rel="noreferrer noopener"
             className={brandUnderlineClasses}
           >
-            message us on Discord.
+            DM us on Twitter.
           </a>
         </div>
       </div>
