@@ -31,6 +31,8 @@ jobs:
           bundler-cache: true
       - name: Install mrsk
         run: gem install mrsk
+      - name: Connect to deploy box
+        run: ssh-keyscan -H lanyard-prod >> ~/.ssh/known_hosts
       - run: ./cmd/api/deploy.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

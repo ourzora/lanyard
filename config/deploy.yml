@@ -5,7 +5,7 @@ image: contextwtf/lanyard
 
 # Deploy to these servers.
 servers:
-  - 100.126.29.9
+  - lanyard-prod
 
 # Credentials for your image host.
 registry:
