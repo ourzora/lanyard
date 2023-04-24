@@ -32,9 +32,7 @@ jobs:
       - name: Install mrsk
         run: gem install mrsk
       - name: Connect to deploy box
-        run: mkdir ~/.ssh && ssh-keyscan -H lanyard-prod >> ~/.ssh/known_hosts
-      - name: Sleep for debug
-        run: sleep 120
+        run: mkdir ~/.ssh && ssh-keyscan -H lanyard-prod.vaquita-turtle.ts.net >> ~/.ssh/known_hosts
       - run: ./cmd/api/deploy.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
