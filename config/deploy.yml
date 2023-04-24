@@ -5,7 +5,7 @@ image: contextwtf/lanyard
 
 # Deploy to these servers.
 servers:
-  - lanyard-prod.vaquita-turtle.ts.net
+  - 100.126.29.9
 
 # Credentials for your image host.
 registry:
