@@ -18,9 +18,10 @@ jobs:
       packages: write
     steps:
       - name: Tailscale
-        uses: tailscale/github-action@v1
+        uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          args: --ssh
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
       - name: Install ruby
