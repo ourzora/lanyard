@@ -1,0 +1,34 @@
+service: lanyard
+
+# Name of the container image.
+image: contextwtf/lanyard
+
+# Deploy to these servers.
+servers:
+  - lanyard-prod
+
+# Credentials for your image host.
+registry:
+  server: ghcr.io
+  username: lanyard
+
+  # Always use an access token rather than real password when possible.
+  password:
+    - GITHUB_TOKEN
+
+traefik:
+  host_port: 80
+
+# Inject ENV variables into containers (secrets come from .env).
+env:
+  clear:
+    DD_ENV: production
+    DD_SERVICE: al-prod
+    DD_AGENT_HOST: 172.17.0.1
+  secret:
+    - DATABASE_URL
+
+# Configure a custom healthcheck (default is /up on port 3000)
+healthcheck:
+  path: /health
+  port: 8080
