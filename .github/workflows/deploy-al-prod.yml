@@ -20,6 +20,8 @@ jobs:
         uses: tailscale/github-action@v1
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
       - run: ./cmd/api/deploy.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
