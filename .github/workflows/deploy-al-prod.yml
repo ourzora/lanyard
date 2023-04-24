@@ -6,6 +6,7 @@ on:
       - "cmd/api/**"
       - "api/**"
       - ".github/**"
+      - "config/**"
       - "**.go"
 
 jobs:
