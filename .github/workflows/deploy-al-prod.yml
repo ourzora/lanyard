@@ -22,6 +22,12 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
+      - name: Install ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: "3.2.1"
+      - name: Install mrsk
+        run: gem install mrsk
       - run: ./cmd/api/deploy.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
