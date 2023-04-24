@@ -21,6 +21,6 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
       - run: ./cmd/api/deploy.sh
-        with:
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
