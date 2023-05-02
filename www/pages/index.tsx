@@ -19,9 +19,9 @@ export default function CreatePage() {
         />
         <div>
           An open source project from{' '}
-          <PartnerLink href="https://context.app">Context</PartnerLink>,{' '}
+          <PartnerLink href="https://mint.fun">mint.fun</PartnerLink>,{' '}
           <PartnerLink href="https://zora.co">Zora</PartnerLink>, and{' '}
-          <PartnerLink href="https://mint.fun">mint.fun</PartnerLink>
+          <PartnerLink href="https://context.app">Context</PartnerLink>
         </div>
       </div>
 

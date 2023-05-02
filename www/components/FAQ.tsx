@@ -97,7 +97,7 @@ export default function FAQ() {
       <QandA>
         <Question>Who’s behind Lanyard?</Question>
         <Answer>
-          Lanyard is an open source collaboration between Context, Zora, and
+          Lanyard is an open source collaboration between mint.fun, Zora, and
           others.{' '}
           <a
             href={twitterUrl}
