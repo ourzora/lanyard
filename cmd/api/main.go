@@ -38,7 +38,9 @@ func copyTrees(ctx context.Context, db *pgxpool.Pool) {
 	t, err := db.Exec(ctx, `
 			insert into trees_proofs
 			(select root, proofs from trees
-			where root not in (select root from trees_proofs))
+			where root not in (select root from trees_proofs)
+			limit 5
+			for update skip locked)
 			`)
 
 	if err != nil {
