@@ -32,6 +32,10 @@ func leaf2Addr(leaf []byte, ltd []string, packed bool) common.Address {
 	if len(ltd) == 0 || (len(ltd) == 1 && ltd[0] == "address") {
 		return common.BytesToAddress(leaf)
 	}
+	if ltd[len(ltd)-1] == "address" && len(leaf) > 20 {
+		return common.BytesToAddress(leaf[len(leaf)-20:])
+	}
+
 	if packed {
 		return addrPacked(leaf, ltd)
 	}
