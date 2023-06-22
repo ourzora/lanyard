@@ -35,10 +35,13 @@ func check(err error) {
 }
 
 func copyTrees(ctx context.Context, db *pgxpool.Pool) {
+	ctx, done := context.WithTimeout(ctx, 5*time.Minute)
+	defer done()
 	t, err := db.Exec(ctx, `
 			insert into trees_proofs
 			(select root, proofs from trees
 			where root not in (select root from trees_proofs)
+			order by inserted_at desc
 			limit 5
 			for update skip locked)
 			`)
