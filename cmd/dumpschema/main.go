@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/contextwtf/lanyard/api/migrations"
-	"github.com/contextwtf/lanyard/migrate"
+	"github.com/contextwtf/migrate"
 	_ "github.com/lib/pq"
 )
 

@@ -1,6 +1,6 @@
 package migrations
 
-import "github.com/contextwtf/lanyard/migrate"
+import "github.com/contextwtf/migrate"
 
 var Migrations = []migrate.Migration{
 	{
