@@ -1,9 +1,11 @@
 package api
 
 import (
+	"bytes"
 	"errors"
 	"net/http"
 
+	"github.com/contextwtf/lanyard/merkle"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jackc/pgx/v4"
@@ -18,41 +20,19 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx  = r.Context()
 		root = common.FromHex(r.URL.Query().Get("root"))
-		leaf = r.URL.Query().Get("unhashedLeaf")
-		addr = r.URL.Query().Get("address")
+		leaf = common.FromHex(r.URL.Query().Get("unhashedLeaf"))
+		addr = common.HexToAddress(r.URL.Query().Get("address"))
 	)
 	if len(root) == 0 {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
-	if leaf == "" && addr == "" {
+	if r.URL.Query().Get("unhashedLeaf") == "" && r.URL.Query().Get("address") == "" {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing leaf")
 		return
 	}
 
-	const q = `
-		WITH tree AS (
-			SELECT jsonb_array_elements(proofs) proofs
-			FROM trees
-			WHERE root = $1
-		)
-		SELECT
-			proofs->'leaf',
-			proofs->'proof'
-		FROM tree
-		WHERE (
-			--eth addresses contain mixed casing to
-			--accommodate checksums. we sidestep
-			--the casing issues for user queries
-			lower(proofs->>'addr') = lower($2)
-			OR lower(proofs->>'leaf') = lower($3)
-		)
-	`
-	var (
-		resp = &getProofResp{}
-		row  = s.db.QueryRow(ctx, q, root, addr, leaf)
-		err  = row.Scan(&resp.UnhashedLeaf, &resp.Proof)
-	)
+	td, err := getTree(ctx, s.db, root)
 	if errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, nil, http.StatusNotFound, "tree not found")
 		w.Header().Set("Cache-Control", "public, max-age=60")
@@ -62,12 +42,49 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var (
+		leaves [][]byte
+		target []byte
+	)
+	// check if leaf is in tree and error if not
+	for _, l := range td.UnhashedLeaves {
+		if len(target) == 0 {
+			if len(leaf) > 0 {
+				if bytes.Equal(l, leaf) {
+					target = l
+				}
+			} else if leaf2Addr(l, td.Ltd, td.Packed).Hex() == addr.Hex() {
+				target = l
+			}
+		}
+
+		leaves = append(leaves, l)
+	}
+
+	if len(target) == 0 {
+		s.sendJSONError(r, w, nil, http.StatusNotFound, "leaf not found in tree")
+		return
+	}
+
+	var (
+		p    = merkle.New(leaves).Proof(target)
+		phex = []hexutil.Bytes{}
+	)
+
+	// convert [][]byte to []hexutil.Bytes
+	for _, p := range p {
+		phex = append(phex, p)
+	}
+
 	// cache for 1 year if we're returning an unhashed leaf proof
 	// or 60 seconds for an address proof
-	if leaf != "" {
+	if len(leaf) > 0 {
 		w.Header().Set("Cache-Control", "public, max-age=31536000")
 	} else {
 		w.Header().Set("Cache-Control", "public, max-age=60")
 	}
-	s.sendJSON(r, w, resp)
+	s.sendJSON(r, w, getProofResp{
+		UnhashedLeaf: target,
+		Proof:        phex,
+	})
 }
