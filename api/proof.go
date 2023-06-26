@@ -27,7 +27,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
-	if r.URL.Query().Get("unhashedLeaf") == "" && r.URL.Query().Get("address") == "" {
+	if len(leaf) == 0 && addr == (common.Address{}) {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing leaf")
 		return
 	}
