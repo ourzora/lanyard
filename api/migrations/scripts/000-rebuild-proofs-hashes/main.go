@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -43,13 +42,10 @@ func migrateTree(
 	)
 	eg.SetLimit(runtime.NumCPU())
 
-	for _, l := range leaves {
-		l := l //avoid capture
+	for i := range leaves {
+		i := i
 		eg.Go(func() error {
-			pf := tree.Proof(l)
-			if !merkle.Valid(tree.Root(), pf, l) {
-				return errors.New("invalid proof for tree")
-			}
+			pf := tree.Proof(i)
 			proofHash := hashProof(pf)
 			pm.Lock()
 			proofHashes = append(proofHashes, []any{tree.Root(), proofHash})
