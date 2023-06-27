@@ -102,10 +102,10 @@ func (t Tree) Proof(target []byte) [][]byte {
 		}
 	}
 
-	return t.proofAtIndex(index)
+	return t.proofForEdge(index)
 }
 
-func (t Tree) proofAtIndex(index int) [][]byte {
+func (t Tree) proofForEdge(index int) [][]byte {
 	var proof [][]byte
 	for _, level := range t {
 		var i int
@@ -131,7 +131,7 @@ func (t Tree) Proofs() [][][]byte {
 	)
 
 	for i := range t[0] {
-		proofs = append(proofs, t.proofAtIndex(i))
+		proofs = append(proofs, t.proofForEdge(i))
 	}
 
 	return proofs
