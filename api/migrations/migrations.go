@@ -119,11 +119,11 @@ var Migrations = []migrate.Migration{
 	{
 		Name: "2023-06-26.0.proofs_hashes.sql",
 		SQL: `
-		CREATE TABLE proofs_hashes (
+		CREATE TABLE IF NOT EXISTS proofs_hashes (
 			hash bytea,
 			root bytea
 		);
-		CREATE INDEX proofs_hashes_hash_idx ON proofs_hashes(hash);
+		CREATE INDEX IF NOT EXISTS proofs_hashes_hash_idx ON proofs_hashes (hash);
 		`,
 	},
 }
