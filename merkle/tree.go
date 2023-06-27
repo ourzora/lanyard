@@ -74,6 +74,18 @@ func (t Tree) Root() []byte {
 	return t[len(t)-1][0]
 }
 
+// Returns the index of the target in the tree.
+// If the target is not in the tree, returns -1.
+func (t Tree) Index(target []byte) int {
+	ht := crypto.Keccak256(target)
+	for i, h := range t[0] {
+		if bytes.Equal(ht, h) {
+			return i
+		}
+	}
+	return -1
+}
+
 // Returns a list of hashes such that
 // cumulatively hashing the list pairwise
 // will yield the root hash of the tree. Example:
@@ -90,22 +102,7 @@ func (t Tree) Root() []byte {
 // [cd]
 //
 // The result of this func will be used in [Valid]
-func (t Tree) Proof(target []byte) [][]byte {
-	var (
-		ht    = crypto.Keccak256(target)
-		index int
-	)
-	for i, h := range t[0] {
-		if bytes.Equal(ht, h) {
-			index = i
-			break
-		}
-	}
-
-	return t.proofForEdge(index)
-}
-
-func (t Tree) proofForEdge(index int) [][]byte {
+func (t Tree) Proof(index int) [][]byte {
 	var proof [][]byte
 	for _, level := range t {
 		var i int
@@ -123,13 +120,13 @@ func (t Tree) proofForEdge(index int) [][]byte {
 	return proof
 }
 
-// Returns proofs for all edges in the tree.
+// Returns proofs for all leafs in the tree.
 // For details on how an individual proof is calculated, see [Tree.Proof].
-func (t Tree) Proofs() [][][]byte {
+func (t Tree) LeafProofs() [][][]byte {
 	proofs := make([][][]byte, len(t[0]))
 
 	for i := range t[0] {
-		proofs[i] = t.proofForEdge(i)
+		proofs[i] = t.Proof(i)
 	}
 
 	return proofs

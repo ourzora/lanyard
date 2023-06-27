@@ -68,7 +68,8 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		p    = merkle.New(leaves).Proof(target)
+		mt   = merkle.New(leaves)
+		p    = mt.Proof(mt.Index(target))
 		phex = []hexutil.Bytes{}
 	)
 

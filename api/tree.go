@@ -147,7 +147,7 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		proofHashes = make([][]any, 0, len(leaves))
-		allProofs   = tree.Proofs()
+		allProofs   = tree.LeafProofs()
 	)
 
 	for _, p := range allProofs {
