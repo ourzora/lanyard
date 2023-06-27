@@ -43,7 +43,8 @@ func (s *Server) GetRoot(w http.ResponseWriter, r *http.Request) {
 	const q = `
 		SELECT root
 		FROM proofs_hashes
-		WHERE hash = $1;
+		WHERE hash = $1
+		group by 1;
 	`
 	var (
 		roots []hexutil.Bytes
