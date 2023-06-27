@@ -30,7 +30,7 @@ func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func leaf2Addr(leaf []byte, ltd []string, packed bool) []byte {
-	if len(ltd) == 0 || (len(ltd) == 1 && ltd[0] == "address") {
+	if len(ltd) == 0 || (len(ltd) == 1 && ltd[0] == "address" && len(leaf) == 20) {
 		return leaf
 	}
 	if ltd[len(ltd)-1] == "address" && len(leaf) > 20 {
