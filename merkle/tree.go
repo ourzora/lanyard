@@ -126,12 +126,10 @@ func (t Tree) proofForEdge(index int) [][]byte {
 // Returns proofs for all edges in the tree.
 // For details on how an individual proof is calculated, see [Tree.Proof].
 func (t Tree) Proofs() [][][]byte {
-	var (
-		proofs = make([][][]byte, 0, len(t[0]))
-	)
+	proofs := make([][][]byte, len(t[0]))
 
 	for i := range t[0] {
-		proofs = append(proofs, t.proofForEdge(i))
+		proofs[i] = t.proofForEdge(i)
 	}
 
 	return proofs
