@@ -123,7 +123,7 @@ func (t Tree) proofAtIndex(index int) [][]byte {
 	return proof
 }
 
-// Returns proofs for all nodes in the tree.
+// Returns proofs for all edges in the tree.
 // For details on how an individual proof is calculated, see [Tree.Proof].
 func (t Tree) Proofs() [][][]byte {
 	var (
