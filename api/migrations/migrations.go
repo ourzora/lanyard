@@ -126,4 +126,11 @@ var Migrations = []migrate.Migration{
 		CREATE INDEX IF NOT EXISTS proofs_hashes_hash_idx ON proofs_hashes (hash);
 		`,
 	},
+	{
+		Name: "2023-06-26.1.drop_data.sql",
+		SQL: `
+		ALTER TABLE "trees" DROP COLUMN "proofs";
+		DROP TABLE "trees_proofs";
+		`,
+	},
 }
