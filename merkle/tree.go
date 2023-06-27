@@ -77,10 +77,11 @@ func (t Tree) Root() []byte {
 // Returns a list of hashes such that
 // cumulatively hashing the list pairwise
 // will yield the root hash of the tree. Example:
-//  [abcde]
-//  [abcd, e]
-//  [ab, cd, e]
-//  [a, b, c, d, e]
+//
+//	[abcde]
+//	[abcd, e]
+//	[ab, cd, e]
+//	[a, b, c, d, e]
 //
 // If the target is 'c' Proof returns:
 // [d, ab, e]
@@ -97,9 +98,14 @@ func (t Tree) Proof(target []byte) [][]byte {
 	for i, h := range t[0] {
 		if bytes.Equal(ht, h) {
 			index = i
+			break
 		}
 	}
 
+	return t.proofAtIndex(index)
+}
+
+func (t Tree) proofAtIndex(index int) [][]byte {
 	var proof [][]byte
 	for _, level := range t {
 		var i int
@@ -115,6 +121,20 @@ func (t Tree) Proof(target []byte) [][]byte {
 		index = index / 2
 	}
 	return proof
+}
+
+// Returns proofs for all nodes in the tree.
+// For details on how an individual proof is calculated, see [Tree.Proof].
+func (t Tree) Proofs() [][][]byte {
+	var (
+		proofs = make([][][]byte, 0, len(t[0]))
+	)
+
+	for i := range t[0] {
+		proofs = append(proofs, t.proofAtIndex(i))
+	}
+
+	return proofs
 }
 
 // Cumulatively hashes the list pairwise starting with

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"sync"
 
 	"github.com/contextwtf/lanyard/merkle"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -14,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"golang.org/x/sync/errgroup"
 )
 
 func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
@@ -117,14 +115,14 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 
 	var leaves [][]byte
 	for _, l := range req.Leaves {
-		// use the go-ethereum HexDecode method because it is more
+		// use the go-ethereum FromHex method because it is more
 		// lenient and will allow for odd-length hex strings (by padding them)
 		leaves = append(leaves, common.FromHex(l))
 	}
 
-	tree := merkle.New(leaves)
-	root := tree.Root()
 	var (
+		tree   = merkle.New(leaves)
+		root   = tree.Root()
 		exists bool
 	)
 
@@ -147,25 +145,15 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		proofHashes = [][]any{}
-		eg          errgroup.Group
-		pm          sync.Mutex
+		proofHashes = make([][]any, 0, len(leaves))
+		allProofs   = tree.Proofs()
 	)
-	for _, l := range leaves {
-		l := l //avoid capture
-		eg.Go(func() error {
-			pf := tree.Proof(l)
-			if !merkle.Valid(tree.Root(), pf, l) {
-				return errors.New("invalid proof for tree")
-			}
-			proofHash := hashProof(pf)
-			pm.Lock()
-			proofHashes = append(proofHashes, []any{tree.Root(), proofHash})
-			pm.Unlock()
-			return nil
-		})
+
+	for _, p := range allProofs {
+		proofHash := hashProof(p)
+		proofHashes = append(proofHashes, []any{root, proofHash})
 	}
-	err = eg.Wait()
+
 	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusBadRequest, "generating proofs for tree")
 		return

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/profile"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentracer"
@@ -37,6 +39,14 @@ func main() {
 	env := os.Getenv("ENV")
 	if env == "" {
 		env = "dev"
+	}
+
+	shouldProfile := flag.Bool("profile", false, "enable profiling")
+	flag.Parse()
+
+	if *shouldProfile {
+		prof := profile.Start(profile.CPUProfile, profile.ProfilePath("."))
+		defer prof.Stop()
 	}
 
 	ddAgent := os.Getenv("DD_AGENT_HOST")
