@@ -55,10 +55,7 @@ func addrUnpacked(leaf []byte, ltd []string) []byte {
 
 	if len(leaf) >= addrStart+32 {
 		l := leaf[addrStart:(addrStart + 32)]
-		if len(l) > 20 {
-			l = l[len(l)-20:]
-		}
-		return l
+		return l[len(l)-20:] // take last 20 bytes
 	}
 	return []byte{}
 }
