@@ -119,3 +119,14 @@ func BenchmarkProof(b *testing.B) {
 		eg.Wait()
 	}
 }
+
+func BenchmarkProofs(b *testing.B) {
+	var leaves [][]byte
+	for i := 0; i < 50000; i++ {
+		leaves = append(leaves, []byte{byte(i)})
+	}
+	mt := New(leaves)
+	for i := 0; i < b.N; i++ {
+		mt.Proofs()
+	}
+}
