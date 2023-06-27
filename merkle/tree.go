@@ -74,8 +74,8 @@ func (t Tree) Root() []byte {
 	return t[len(t)-1][0]
 }
 
-// Returns the index of the target in the tree.
-// If the target is not in the tree, returns -1.
+// Returns the index of the target leaf in the tree.
+// If the target is not a leaf in the tree, returns -1.
 func (t Tree) Index(target []byte) int {
 	ht := crypto.Keccak256(target)
 	for i, h := range t[0] {
