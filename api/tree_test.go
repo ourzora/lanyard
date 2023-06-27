@@ -108,6 +108,12 @@ func TestLeaf2Addr(t *testing.T) {
 			false,
 			common.FromHex("0x0000000000000000000000000000000000000001"),
 		},
+		{
+			common.FromHex("0x0000000000000000000000000000000000000000000000000000000000000001"),
+			[]string{"address"},
+			true,
+			common.FromHex("0x0000000000000000000000000000000000000001"),
+		},
 	}
 
 	for _, c := range cases {
