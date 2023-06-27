@@ -81,12 +81,44 @@ func TestProof(t *testing.T) {
 
 	for _, tc := range cases {
 		mt := New(tc.leaves)
-		for _, l := range tc.leaves {
-			pf := mt.Proof(l)
+		for i, l := range tc.leaves {
+			pf := mt.Proof(i)
 			if !Valid(mt.Root(), pf, l) {
 				t.Error("invalid proof")
 			}
 		}
+	}
+}
+
+func TestIndex(t *testing.T) {
+	leaves := [][]byte{
+		[]byte("a"),
+		[]byte("b"),
+		[]byte("c"),
+		[]byte("d"),
+		[]byte("e"),
+	}
+	mt := New(leaves)
+	for i, l := range leaves {
+		r := mt.Index(l)
+		if r != i {
+			t.Errorf("incorrect index, expected %d, got %d", i, r)
+		}
+	}
+}
+
+func TestMissingIndex(t *testing.T) {
+	mt := New([][]byte{
+		[]byte("a"),
+		[]byte("b"),
+		[]byte("c"),
+		[]byte("d"),
+		[]byte("e"),
+	})
+
+	pf := mt.Index([]byte("f"))
+	if pf != -1 {
+		t.Errorf("incorrect index, expected %d, got %d", -1, pf)
 	}
 }
 
@@ -109,13 +141,24 @@ func BenchmarkProof(b *testing.B) {
 	mt := New(leaves)
 	for i := 0; i < b.N; i++ {
 		var eg errgroup.Group
-		for _, l := range leaves {
-			l := l
+		for i := range leaves {
+			i := i
 			eg.Go(func() error {
-				mt.Proof(l)
+				mt.Proof(i)
 				return nil
 			})
 		}
 		eg.Wait()
+	}
+}
+
+func BenchmarkProofs(b *testing.B) {
+	var leaves [][]byte
+	for i := 0; i < 50000; i++ {
+		leaves = append(leaves, []byte{byte(i)})
+	}
+	mt := New(leaves)
+	for i := 0; i < b.N; i++ {
+		mt.LeafProofs()
 	}
 }

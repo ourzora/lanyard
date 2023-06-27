@@ -8,6 +8,7 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/lib/pq v1.10.9
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/pkg/profile v1.2.1
 	github.com/rs/cors v1.8.2
 	github.com/rs/zerolog v1.29.1
 	golang.org/x/sync v0.3.0
@@ -43,6 +44,7 @@ require (
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rs/xid v1.4.0 // indirect
+	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/tinylib/msgp v1.1.2 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect

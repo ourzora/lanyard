@@ -21,13 +21,14 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		ctx  = r.Context()
 		root = common.FromHex(r.URL.Query().Get("root"))
 		leaf = common.FromHex(r.URL.Query().Get("unhashedLeaf"))
-		addr = common.HexToAddress(r.URL.Query().Get("address"))
+		addr = common.FromHex(r.URL.Query().Get("address"))
 	)
+
 	if len(root) == 0 {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
-	if len(leaf) == 0 && addr == (common.Address{}) {
+	if len(leaf) == 0 && len(addr) == 0 {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing leaf")
 		return
 	}
@@ -53,7 +54,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 				if bytes.Equal(l, leaf) {
 					target = l
 				}
-			} else if leaf2Addr(l, td.Ltd, td.Packed).Hex() == addr.Hex() {
+			} else if bytes.Equal(leaf2Addr(l, td.Ltd, td.Packed), addr) {
 				target = l
 			}
 		}
@@ -67,7 +68,8 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		p    = merkle.New(leaves).Proof(target)
+		mt   = merkle.New(leaves)
+		p    = mt.Proof(mt.Index(target))
 		phex = []hexutil.Bytes{}
 	)
 

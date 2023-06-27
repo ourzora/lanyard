@@ -51,7 +51,7 @@ func hashPair(a, b []byte) []byte {
 // pair with a hash function creating a new level that
 // is half the size of the level.
 func hashMerge(level [][]byte) [][]byte {
-	var newLevel [][]byte
+	newLevel := make([][]byte, 0, (len(level)+1)/2)
 	for i := 0; i < len(level); i += 2 {
 		switch {
 		case i+1 == len(level):
@@ -74,13 +74,26 @@ func (t Tree) Root() []byte {
 	return t[len(t)-1][0]
 }
 
+// Returns the index of the target leaf in the tree.
+// If the target is not a leaf in the tree, returns -1.
+func (t Tree) Index(target []byte) int {
+	ht := crypto.Keccak256(target)
+	for i, h := range t[0] {
+		if bytes.Equal(ht, h) {
+			return i
+		}
+	}
+	return -1
+}
+
 // Returns a list of hashes such that
 // cumulatively hashing the list pairwise
 // will yield the root hash of the tree. Example:
-//  [abcde]
-//  [abcd, e]
-//  [ab, cd, e]
-//  [a, b, c, d, e]
+//
+//	[abcde]
+//	[abcd, e]
+//	[ab, cd, e]
+//	[a, b, c, d, e]
 //
 // If the target is 'c' Proof returns:
 // [d, ab, e]
@@ -89,17 +102,7 @@ func (t Tree) Root() []byte {
 // [cd]
 //
 // The result of this func will be used in [Valid]
-func (t Tree) Proof(target []byte) [][]byte {
-	var (
-		ht    = crypto.Keccak256(target)
-		index int
-	)
-	for i, h := range t[0] {
-		if bytes.Equal(ht, h) {
-			index = i
-		}
-	}
-
+func (t Tree) Proof(index int) [][]byte {
 	var proof [][]byte
 	for _, level := range t {
 		var i int
@@ -115,6 +118,18 @@ func (t Tree) Proof(target []byte) [][]byte {
 		index = index / 2
 	}
 	return proof
+}
+
+// Returns proofs for all leafs in the tree.
+// For details on how an individual proof is calculated, see [Tree.Proof].
+func (t Tree) LeafProofs() [][][]byte {
+	proofs := make([][][]byte, len(t[0]))
+
+	for i := range t[0] {
+		proofs[i] = t.Proof(i)
+	}
+
+	return proofs
 }
 
 // Cumulatively hashes the list pairwise starting with
