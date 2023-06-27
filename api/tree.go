@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,7 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -79,12 +82,8 @@ func addrPacked(leaf []byte, ltd []string) common.Address {
 	return common.Address{}
 }
 
-func encodeProof(p [][]byte) []string {
-	var res []string
-	for i := range p {
-		res = append(res, hexutil.Encode(p[i]))
-	}
-	return res
+func hashProof(p [][]byte) []byte {
+	return crypto.Keccak256(p...)
 }
 
 type createTreeReq struct {
@@ -147,15 +146,10 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type proofItem struct {
-		Leaf  string   `json:"leaf"`
-		Addr  string   `json:"addr"`
-		Proof []string `json:"proof"`
-	}
 	var (
-		proofs = []proofItem{}
-		eg     errgroup.Group
-		pm     sync.Mutex
+		proofHashes = [][]any{}
+		eg          errgroup.Group
+		pm          sync.Mutex
 	)
 	for _, l := range leaves {
 		l := l //avoid capture
@@ -164,17 +158,9 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 			if !merkle.Valid(tree.Root(), pf, l) {
 				return errors.New("invalid proof for tree")
 			}
-			var (
-				addr         = leaf2Addr(l, req.Ltd, req.Packed).Hex()
-				encodedLeaf  = hexutil.Encode(l)
-				encodedProof = encodeProof(pf)
-			) // encode outside of lock
+			proofHash := hashProof(pf)
 			pm.Lock()
-			proofs = append(proofs, proofItem{
-				Addr:  addr,
-				Leaf:  encodedLeaf,
-				Proof: encodedProof,
-			})
+			proofHashes = append(proofHashes, []any{tree.Root(), proofHash})
 			pm.Unlock()
 			return nil
 		})
@@ -190,25 +176,46 @@ func (s *Server) CreateTree(w http.ResponseWriter, r *http.Request) {
 			root,
 			unhashed_leaves,
 			ltd,
-			packed,
-			proofs
-		) VALUES ($1, $2, $3, $4, $5)
+			packed
+		) VALUES ($1, $2, $3, $4)
 		ON CONFLICT (root)
 		DO NOTHING
 	`
-	_, err = s.db.Exec(ctx, q,
+
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "creating transaction")
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, q,
 		tree.Root(),
 		leaves,
 		req.Ltd,
 		req.Packed,
-		proofs,
 	)
 	if err != nil {
 		s.sendJSONError(r, w, err, http.StatusInternalServerError, "inserting tree")
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	_, err = tx.CopyFrom(ctx, pgx.Identifier{"proofs_hashes"},
+		[]string{"root", "hash"},
+		pgx.CopyFromRows(proofHashes),
+	)
+
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "inserting proof hashes")
+		return
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		s.sendJSONError(r, w, err, http.StatusInternalServerError, "committing transaction")
+		return
+	}
+
 	s.sendJSON(r, w, createTreeResp{hexutil.Encode(root)})
 }
 
@@ -217,6 +224,24 @@ type getTreeResp struct {
 	LeafCount      int             `json:"leafCount"`
 	Ltd            []string        `json:"leafTypeDescriptor"`
 	Packed         bool            `json:"packedEncoding"`
+}
+
+func getTree(ctx context.Context, db *pgxpool.Pool, root []byte) (getTreeResp, error) {
+	const q = `
+		SELECT unhashed_leaves, ltd, packed
+		FROM trees
+		WHERE root = $1
+	`
+	tr := getTreeResp{}
+	err := db.QueryRow(ctx, q, root).Scan(
+		&tr.UnhashedLeaves,
+		&tr.Ltd,
+		&tr.Packed,
+	)
+	if err != nil {
+		return tr, err
+	}
+	return tr, nil
 }
 
 func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
@@ -228,17 +253,9 @@ func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
 		s.sendJSONError(r, w, nil, http.StatusBadRequest, "missing root")
 		return
 	}
-	const q = `
-		SELECT unhashed_leaves, ltd, packed
-		FROM trees
-		WHERE root = $1
-	`
-	tr := getTreeResp{}
-	err := s.db.QueryRow(ctx, q, common.FromHex(root)).Scan(
-		&tr.UnhashedLeaves,
-		&tr.Ltd,
-		&tr.Packed,
-	)
+
+	tr, err := getTree(ctx, s.db, common.FromHex(root))
+
 	if errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, nil, http.StatusNotFound, "tree not found for root")
 		w.Header().Set("Cache-Control", "public, max-age=60")

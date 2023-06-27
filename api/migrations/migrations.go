@@ -116,4 +116,14 @@ var Migrations = []migrate.Migration{
 		CREATE INDEX proofs_arr_idx ON trees_proofs USING GIN ((proofs_array(proofs)));
 		`,
 	},
+	{
+		Name: "2023-06-26.0.proofs_hashes.sql",
+		SQL: `
+		CREATE TABLE IF NOT EXISTS proofs_hashes (
+			hash bytea,
+			root bytea
+		);
+		CREATE INDEX IF NOT EXISTS proofs_hashes_hash_idx ON proofs_hashes (hash);
+		`,
+	},
 }
