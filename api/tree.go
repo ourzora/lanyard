@@ -29,12 +29,12 @@ func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func leaf2Addr(leaf []byte, ltd []string, packed bool) common.Address {
+func leaf2AddrBytes(leaf []byte, ltd []string, packed bool) []byte {
 	if len(ltd) == 0 || (len(ltd) == 1 && ltd[0] == "address") {
-		return common.BytesToAddress(leaf)
+		return leaf
 	}
 	if ltd[len(ltd)-1] == "address" && len(leaf) > 20 {
-		return common.BytesToAddress(leaf[len(leaf)-20:])
+		return leaf[len(leaf)-20:]
 	}
 
 	if packed {
@@ -43,7 +43,7 @@ func leaf2Addr(leaf []byte, ltd []string, packed bool) common.Address {
 	return addrUnpacked(leaf, ltd)
 }
 
-func addrUnpacked(leaf []byte, ltd []string) common.Address {
+func addrUnpacked(leaf []byte, ltd []string) []byte {
 	var addrStart, pos int
 	for _, desc := range ltd {
 		if desc == "address" {
@@ -52,32 +52,36 @@ func addrUnpacked(leaf []byte, ltd []string) common.Address {
 		}
 		pos += 32
 	}
+
 	if len(leaf) >= addrStart+32 {
-		return common.BytesToAddress(leaf[addrStart:(addrStart + 32)])
+		l := leaf[addrStart:(addrStart + 32)]
+		if len(l) > 20 {
+			l = l[len(l)-20:]
+		}
+		return l
 	}
-	return common.Address{}
+	return []byte{}
 }
 
-func addrPacked(leaf []byte, ltd []string) common.Address {
+func addrPacked(leaf []byte, ltd []string) []byte {
 	var addrStart, pos int
 	for _, desc := range ltd {
 		t, err := abi.NewType(desc, "", nil)
 		if err != nil {
-			return common.Address{}
-		}
-		if desc == "address" {
+			return []byte{}
+		} else if desc == "address" {
 			addrStart = pos
 			break
 		}
 		pos += int(t.GetType().Size())
 	}
 	if addrStart == 0 && pos != 0 {
-		return common.Address{}
+		return []byte{}
 	}
 	if len(leaf) >= addrStart+20 {
-		return common.BytesToAddress(leaf[addrStart:(addrStart + 20)])
+		return leaf[addrStart:(addrStart + 20)]
 	}
-	return common.Address{}
+	return []byte{}
 }
 
 func hashProof(p [][]byte) []byte {

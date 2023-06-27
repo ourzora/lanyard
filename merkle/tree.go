@@ -51,7 +51,7 @@ func hashPair(a, b []byte) []byte {
 // pair with a hash function creating a new level that
 // is half the size of the level.
 func hashMerge(level [][]byte) [][]byte {
-	var newLevel [][]byte
+	newLevel := make([][]byte, 0, (len(level)+1)/2)
 	for i := 0; i < len(level); i += 2 {
 		switch {
 		case i+1 == len(level):
