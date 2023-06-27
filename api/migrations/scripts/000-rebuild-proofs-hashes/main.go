@@ -102,6 +102,11 @@ func main() {
 		check(err)
 	}
 
+	if len(trees) == 0 {
+		log.Println("no trees to process")
+		return
+	}
+
 	log.Printf("migrating %d trees", len(trees))
 
 	tx, err := db.Begin(ctx)
