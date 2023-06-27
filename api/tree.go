@@ -29,7 +29,7 @@ func (s *Server) TreeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func leaf2AddrBytes(leaf []byte, ltd []string, packed bool) []byte {
+func leaf2Addr(leaf []byte, ltd []string, packed bool) []byte {
 	if len(ltd) == 0 || (len(ltd) == 1 && ltd[0] == "address") {
 		return leaf
 	}

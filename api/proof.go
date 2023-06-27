@@ -54,7 +54,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 				if bytes.Equal(l, leaf) {
 					target = l
 				}
-			} else if bytes.Equal(leaf2AddrBytes(l, td.Ltd, td.Packed), addr) {
+			} else if bytes.Equal(leaf2Addr(l, td.Ltd, td.Packed), addr) {
 				target = l
 			}
 		}
