@@ -75,7 +75,7 @@ contract NFTContract is ERC721 {
           );
     }
   
-  function mintAllowList(uint256 _tokenId, bytes32[] _proof) external {
+  function mintAllowList(uint256 _tokenId, bytes32[] calldata _proof) external {
     require(allowListed(msg.sender, _proof), "You are not on the allowlist");
     _mint(msg.sender, _tokenId);
   }
