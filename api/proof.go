@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"net/http"
 
@@ -16,10 +17,41 @@ type getProofResp struct {
 	Proof        []hexutil.Bytes `json:"proof"`
 }
 
+type cachedTree struct {
+	r getTreeResp
+	t merkle.Tree
+}
+
+func (s *Server) getCachedTree(ctx context.Context, root common.Hash) (cachedTree, error) {
+	r, ok := s.tlru.Get(root)
+	if ok {
+		return r, nil
+	}
+
+	td, err := getTree(ctx, s.db, root.Bytes())
+	if err != nil {
+		return cachedTree{}, err
+	}
+
+	leaves := [][]byte{}
+	for _, l := range td.UnhashedLeaves {
+		leaves = append(leaves, l[:])
+	}
+
+	t := merkle.New(leaves)
+	ct := cachedTree{
+		r: td,
+		t: t,
+	}
+
+	s.tlru.Add(root, ct)
+	return ct, nil
+}
+
 func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx  = r.Context()
-		root = common.FromHex(r.URL.Query().Get("root"))
+		root = common.HexToHash(r.URL.Query().Get("root"))
 		leaf = common.FromHex(r.URL.Query().Get("unhashedLeaf"))
 		addr = common.FromHex(r.URL.Query().Get("address"))
 	)
@@ -33,7 +65,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	td, err := getTree(ctx, s.db, root)
+	ct, err := s.getCachedTree(ctx, root)
 	if errors.Is(err, pgx.ErrNoRows) {
 		s.sendJSONError(r, w, nil, http.StatusNotFound, "tree not found")
 		w.Header().Set("Cache-Control", "public, max-age=60")
@@ -44,22 +76,19 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		leaves [][]byte
 		target []byte
 	)
 	// check if leaf is in tree and error if not
-	for _, l := range td.UnhashedLeaves {
+	for _, l := range ct.r.UnhashedLeaves {
 		if len(target) == 0 {
 			if len(leaf) > 0 {
 				if bytes.Equal(l, leaf) {
 					target = l
 				}
-			} else if bytes.Equal(leaf2Addr(l, td.Ltd, td.Packed), addr) {
+			} else if bytes.Equal(leaf2Addr(l, ct.r.Ltd, ct.r.Packed), addr) {
 				target = l
 			}
 		}
-
-		leaves = append(leaves, l)
 	}
 
 	if len(target) == 0 {
@@ -68,8 +97,7 @@ func (s *Server) GetProof(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		mt   = merkle.New(leaves)
-		p    = mt.Proof(mt.Index(target))
+		p    = ct.t.Proof(ct.t.Index(target))
 		phex = []hexutil.Bytes{}
 	)
 

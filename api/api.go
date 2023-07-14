@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/contextwtf/lanyard/api/tracing"
+	"github.com/ethereum/go-ethereum/common"
 
+	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
@@ -20,12 +22,18 @@ import (
 )
 
 type Server struct {
-	db *pgxpool.Pool
+	db   *pgxpool.Pool
+	tlru *lru.Cache[common.Hash, cachedTree]
 }
 
 func New(db *pgxpool.Pool) *Server {
+	l, err := lru.New[common.Hash, cachedTree](1000)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to create lru cache")
+	}
 	return &Server{
-		db: db,
+		db:   db,
+		tlru: l,
 	}
 }
 
