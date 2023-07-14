@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/contextwtf/migrate v0.0.1
 	github.com/ethereum/go-ethereum v1.10.21
+	github.com/hashicorp/golang-lru/v2 v2.0.4
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/lib/pq v1.10.9
 	github.com/opentracing/opentracing-go v1.2.0
