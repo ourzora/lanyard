@@ -256,6 +256,6 @@ func (s *Server) GetTree(w http.ResponseWriter, r *http.Request) {
 
 	tr.LeafCount = len(tr.UnhashedLeaves)
 
-	w.Header().Set("Cache-Control", "public, max-age=5")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
 	s.sendJSON(r, w, tr)
 }
