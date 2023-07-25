@@ -7,19 +7,19 @@ import {
   InferGetServerSidePropsType,
 } from 'next'
 import Link from 'next/link'
-import { getMerkleTree, TreeResponse } from 'utils/api'
+import { getMerkleTree, useMerkleTree } from 'utils/api'
 import { dmMintFunTwitterUrl } from 'utils/constants'
 import { brandUnderlineClasses } from 'utils/theme'
 
 type Props = {
   merkleRoot: string
-  tree: TreeResponse
 }
 
 export default function MerkleRootPage({
   merkleRoot,
-  tree,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const { data } = useMerkleTree(merkleRoot)
+
   return (
     <div className="flex flex-col gap-y-[6rem]">
       <div className="flex flex-col gap-y-4">
@@ -49,7 +49,7 @@ export default function MerkleRootPage({
         </div>
       </div>
 
-      <Tutorial addresses={tree.unhashedLeaves} />
+      {data !== undefined && <Tutorial addresses={data.unhashedLeaves} />}
     </div>
   )
 }
@@ -60,11 +60,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const merkleRoot = String(ctx.params?.merkleRoot)
 
   try {
-    const tree = await getMerkleTree(merkleRoot)
+    // will fail if tree is missing
+    await getMerkleTree(merkleRoot)
     return {
       props: {
         merkleRoot,
-        tree,
       },
     }
   } catch {

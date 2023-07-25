@@ -14,12 +14,11 @@ import { useRouter } from 'next/router'
 import { useQuery } from 'hooks/useQuery'
 import { useWindowSize } from 'hooks/useWindowSize'
 import { isAddressLike } from 'utils/address'
-import { getMerkleTree } from 'utils/api'
+import { getMerkleTree, useMerkleTree } from 'utils/api'
 import { isENSLike, resolveEnsDomain } from 'utils/ens'
 
 type Props = {
   merkleRoot: string
-  addresses: ReadonlyArray<string>
   lastQuery: string | null
   address: string | null
   error: Error | null
@@ -27,18 +26,25 @@ type Props = {
 
 export default function MembershipPage({
   address,
-  addresses,
   error,
   lastQuery,
   merkleRoot,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter()
   const { query, trimmedQuery, setQuery, isDisabled } = useQuery(lastQuery)
+
+  const { data } = useMerkleTree(merkleRoot)
+
+  const addresses = useMemo(
+    () => data?.unhashedLeaves.filter(isAddressLike),
+    [data?.unhashedLeaves],
+  )
+
   const addressIndex = useMemo(
     () =>
-      addresses.findIndex(
+      addresses?.findIndex(
         (leaf) => leaf.toLowerCase() === address?.toLowerCase(),
-      ),
+      ) ?? -1,
     [address, addresses],
   )
   const isFound = addressIndex !== -1
@@ -83,22 +89,27 @@ export default function MembershipPage({
         />
       </form>
       <div className="flex flex-col gap-y-4">
-        <ResultContainer
-          isFound={isFound}
-          error={error}
-          lastQuery={lastQuery}
-        />
-        <div>
-          Showing {addresses.length} addresses from the{' '}
-          <span className="font-mono break-words">{merkleRoot}</span> allowlist
-        </div>
-        {width !== undefined ? (
-          <List
-            rows={addresses}
-            addressIndex={addressIndex}
-            lanes={width < 1000 ? 1 : 2}
-          />
-        ) : null}
+        {addresses !== undefined && (
+          <>
+            <ResultContainer
+              isFound={isFound}
+              error={error}
+              lastQuery={lastQuery}
+            />
+            <div>
+              Showing {addresses.length} addresses from the{' '}
+              <span className="font-mono break-words">{merkleRoot}</span>{' '}
+              allowlist
+            </div>
+            {width !== undefined ? (
+              <List
+                rows={addresses}
+                addressIndex={addressIndex}
+                lanes={width < 1000 ? 1 : 2}
+              />
+            ) : null}
+          </>
+        )}
         <About />
       </div>
     </div>
@@ -255,12 +266,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const { address, error } = await getAddress(lastQuery)
 
   try {
-    const tree = await getMerkleTree(merkleRoot)
-    const addresses = tree.unhashedLeaves.filter(isAddressLike)
+    // will fail if tree is missing
+    await getMerkleTree(merkleRoot)
     return {
       props: {
         merkleRoot,
-        addresses,
         lastQuery,
         error,
         address,

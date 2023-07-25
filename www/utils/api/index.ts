@@ -72,3 +72,6 @@ export async function getMerkleTree(root: string) {
 
   return (await res.json()) as TreeResponse
 }
+
+export const useMerkleTree = (root: string) =>
+  useAPIResponse<TreeResponse>(`v1/tree?root=${root}`)
