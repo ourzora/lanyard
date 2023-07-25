@@ -2,7 +2,7 @@ import classNames from 'classnames'
 import React from 'react'
 
 type Props = {
-  onClick: () => void
+  onClick?: () => void
   label: string
   disabled?: boolean
   pending?: boolean

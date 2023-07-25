@@ -6,19 +6,20 @@ import {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from 'next'
-import { getMerkleTree, TreeResponse } from 'utils/api'
+import Link from 'next/link'
+import { getMerkleTree, useMerkleTree } from 'utils/api'
 import { dmMintFunTwitterUrl } from 'utils/constants'
 import { brandUnderlineClasses } from 'utils/theme'
 
 type Props = {
   merkleRoot: string
-  tree: TreeResponse
 }
 
 export default function MerkleRootPage({
   merkleRoot,
-  tree,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const { data } = useMerkleTree(merkleRoot)
+
   return (
     <div className="flex flex-col gap-y-[6rem]">
       <div className="flex flex-col gap-y-4">
@@ -27,6 +28,13 @@ export default function MerkleRootPage({
         </PageTitle>
         <div className="font-bold">
           <CodeBlock language="txt" code={merkleRoot} oneLiner />
+        </div>
+        <div>
+          The entire list of addresses in the allowlist can be found on the{' '}
+          <Link href={`/membership/${merkleRoot}`} passHref>
+            <a className={brandUnderlineClasses}>membership page</a>
+          </Link>{' '}
+          for your Merkle root.
         </div>
         <div>
           Wire up your Merkle root with the guide below. If you need help,{' '}
@@ -41,7 +49,7 @@ export default function MerkleRootPage({
         </div>
       </div>
 
-      <Tutorial addresses={tree.unhashedLeaves} />
+      {data !== undefined && <Tutorial addresses={data.unhashedLeaves} />}
     </div>
   )
 }
@@ -52,11 +60,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const merkleRoot = String(ctx.params?.merkleRoot)
 
   try {
-    const tree = await getMerkleTree(merkleRoot)
+    // will fail if tree is missing
+    await getMerkleTree(merkleRoot)
     return {
       props: {
         merkleRoot,
-        tree,
       },
     }
   } catch {

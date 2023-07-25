@@ -27,6 +27,7 @@ export default function SiteNav() {
           title="Create"
           selectedOverride={createTabSelectedOverride}
         />
+        <NavTab href="/search" title="Search" />
         <NavTab href="/docs" title="API" />
         <a
           href={twitterUrl}
