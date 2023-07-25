@@ -8,7 +8,7 @@ import {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from 'next'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRouter } from 'next/router'
 import { useQuery } from 'hooks/useQuery'
@@ -34,7 +34,13 @@ export default function MembershipPage({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter()
   const { query, trimmedQuery, setQuery, isDisabled } = useQuery(lastQuery)
-  const addressIndex = addresses.findIndex((leaf) => leaf === address)
+  const addressIndex = useMemo(
+    () =>
+      addresses.findIndex(
+        (leaf) => leaf.toLowerCase() === address?.toLowerCase(),
+      ),
+    [address, addresses],
+  )
   const isFound = addressIndex !== -1
   const { width } = useWindowSize()
 
