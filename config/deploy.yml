@@ -25,7 +25,7 @@ env:
   clear:
     DD_ENV: production
     DD_SERVICE: al-prod
-    DD_AGENT_HOST: 172.17.0.1
+    DD_AGENT_HOST: zora-datadog-agent.datadog-agent.svc.cluster.local
   secret:
     - DATABASE_URL
 
