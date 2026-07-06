@@ -146,11 +146,17 @@ func tracingHandler(env, service, sha string, h http.Handler) http.Handler {
 		requestStart := time.Now()
 		h.ServeHTTP(sc, r.WithContext(ctx))
 
-		// log every request
-		log.Info().
+		// successful requests log at debug (invisible at the prod info level);
+		// errors keep info so failures still surface
+		evt := log.Debug()
+		if sc.status >= 400 {
+			evt = log.Info()
+		}
+		evt.
 			Int("status", sc.status).
 			Dur("duration", time.Since(requestStart)).
-			Msg("")
+			Str("path", r.URL.Path).
+			Msg("http request")
 
 		span.SetTag(ext.HTTPCode, sc.status)
 	})
